@@ -158,20 +158,6 @@ make logs
 - [README.md](README.md) - Complete setup and configuration guide
 - [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md) - Detailed Okta stored procedures configuration
 
-## 🆘 Common Issues
-
-**"Waiting for configuration files"**
-- Run `make configure` to set up the OPP Agent
-
-**SCIM connection failed**
-- Verify you added `Bearer ` prefix to the token
-- Check SCIM server hostname is `okta-scim` (not localhost)
-- Upload the certificate file from `./data/okta-scim/certs/`
-
-**Database connection failed**
-- Use hostname `db` (not localhost)
-- Verify credentials: `oktademo / oktademo`
-
 ## 🔗 References
 
 1. [Install the Okta Provisioning Agent](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)

@@ -873,7 +873,7 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
    - Empty fields can be manually entered
    - Click **Assign and Continue**  
 
-   ![alt text](image.png)
+   ![Okta assign user to app form showing custom attribute values and continue button](img/okta-assign-user-to-app-form.png)
 
 4. **Assign Entitlements**
    - In the **Select Assignment** section, select **Custom Values** from the **Entitlement assignment method**  dropdown
@@ -911,7 +911,7 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
 
       You can also verify with DBGate UI, by opening the `USERENTITLEMENTS` table or the `v_userentitlements` view.
 
-      ![Placeholder: Verify user entitlements in DBGate USERENTITLEMENTS table](image-1.png)
+      ![Verify user entitlements in DBGate USERENTITLEMENTS table showing assigned entitlements with dates](img/dbgate-userentitlements-table-verification.png)
 
 ---
 
