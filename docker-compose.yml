@@ -1,0 +1,65 @@
+services:
+  # MariaDB Database 
+  db:
+    image: mariadb:11
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d/:ro
+    healthcheck:
+      test: /usr/bin/mariadb-admin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD
+      start_period: 5s
+    #  interval: 5s
+    #  timeout: 5s
+    #  retries: 10
+    env_file: .env
+
+  # DBGate UI
+  dbgate:
+    image: "dbgate/dbgate:latest"
+    ports:
+      - "8090:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - CONNECTIONS=${MARIADB_DATABASE}
+      - LABEL_${MARIADB_DATABASE}=${MARIADB_DATABASE} MariaDB Server
+      - SERVER_${MARIADB_DATABASE}=db
+      - USER_${MARIADB_DATABASE}=root
+      - PASSWORD_${MARIADB_DATABASE}=${MARIADB_ROOT_PASSWORD}
+      - PORT_${MARIADB_DATABASE}=${MARIADB_PORT:-3306}
+      - ENGINE_${MARIADB_DATABASE}=mysql@dbgate-plugin-mysql
+
+  # Okta OnPrem Provisioning Agent (OPP)
+  okta-opp:
+    build: ./docker/okta-opp
+    hostname: okta-opp
+    volumes:
+      - ./data/okta-opp/conf:/opt/OktaProvisioningAgent/conf/
+      - ./data/okta-opp/logs:/opt/OktaProvisioningAgent/logs/
+      - ./data/okta-opp/security:/opt/OktaProvisioningAgent/security/
+    depends_on:
+      okta-scim:
+        condition: service_healthy
+    env_file: .env
+    platform: linux/amd64 # Workaround for compatibility with MacOS
+    stdin_open: true
+    tty: true
+
+  # Okta OnPrem SCIM Server
+  okta-scim:
+    build: ./docker/okta-scim
+    hostname: okta-scim
+    volumes:
+      - ./data/okta-scim/logs:/var/log/OktaOnPremScimServer/
+      - ./data/okta-scim/conf:/etc/OktaOnPremScimServer/
+      - ./data/okta-scim/certs/:/opt/OktaOnPremScimServer/certs/
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "1443:1443"
+    env_file: .env
+    platform: linux/amd64 # Workaround for compatibility with MacOS
+    stdin_open: true
+    tty: true

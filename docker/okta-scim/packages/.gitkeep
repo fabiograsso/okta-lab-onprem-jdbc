@@ -1,0 +1,6 @@
+Copy here the following files:
+
+- Okta On Premise Provisioning Agent RPM (`OktaOnPremProvisioningAgent-<version>.rpm`)
+- Okta On Premise SCIM Server RPM (`OktaOnPremScimServer-<version>.rpm`)
+- Database driver jar file (e.g., `mariadb-java-client-3.5.7.jar`)
+- (optional) VPN Certificate (`certificate.pem`)
