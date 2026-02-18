@@ -12,7 +12,6 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 
 ## 📋 Table of Contents
 
-- [Quick Start Guide](QUICKSTART.md) - Fast setup in minutes
 - [Overview](#-overview)
   - [What is the Okta Generic Database Connector (JDBC)?](#what-is-the-okta-generic-database-connector-jdbc)
   - [What is the Okta On-Premises Provisioning Agent?](#what-is-the-okta-on-premises-provisioning-agent)
@@ -35,6 +34,10 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 - [Resources](#-resources)
 - [License](#-license)
 - [Author](#-author)
+- Other documentation files:
+  - [Fast Start Guide](QUICKSTART.md) - Fast setup in minutes 
+  - [Okta Provisioning Configuration Guide](doc/Okta_Provisioning_Configuration.md)
+  - [Okta On-Prem SCIM Server - Technical Documentation](doc/Okta_SCIM_Server.md)
 
 ## 🎯 Overview
 
