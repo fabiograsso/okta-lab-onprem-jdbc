@@ -1,7 +1,7 @@
 services:
   # MariaDB Database 
   db:
-    image: mariadb:11
+    image: mariadb:11-alpine
     volumes:
       - ./data/mysql:/var/lib/mysql
       - ./sql:/docker-entrypoint-initdb.d/:ro
