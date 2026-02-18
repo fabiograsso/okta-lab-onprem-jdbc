@@ -56,7 +56,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh && \
 
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
-HEALTHCHECK --start-period=5s \
+HEALTHCHECK --start-period=10s --start-interval=1s --interval=300s --timeout=5s \
   CMD TOKEN=$(grep 'scim.security.bearer.token' /etc/OktaOnPremScimServer/config-*.properties 2>/dev/null | cut -d'=' -f2 | tr -d ' ') && \
       [ -n "$TOKEN" ] && \
-      curl --cacert /etc/pki/tls/certs/OktaOnPremScimServer-*.crt -s -f --no-keepalive --max-time 5 -H "Authorization: Bearer $TOKEN" https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/Status 2>/dev/null | grep -q 'Scim Server is running' || exit 1
+      curl --cacert /etc/pki/tls/certs/OktaOnPremScimServer-*.crt -s -f --max-time 5 --http1.0 -H "Authorization: Bearer $TOKEN" https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/Status 2>/dev/null | grep -q 'Scim Server is running' || exit 1
