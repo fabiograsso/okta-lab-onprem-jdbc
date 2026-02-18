@@ -37,7 +37,8 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 - Hostname: `okta-opp`
 - Components:
   - Okta Provisioning Agent
-  - Oracle JDK (bundled with agent)
+  - OpenJDK 21 Headless (system package: java-21-openjdk-headless)
+  - Oracle JDK 21 (bundled with agent RPM as fallback)
 - Volumes:
   - `./data/okta-opp/conf` → `/opt/OktaProvisioningAgent/conf/`
   - `./data/okta-opp/logs` → `/opt/OktaProvisioningAgent/logs/`
@@ -52,8 +53,10 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 - Hostname: `okta-scim`
 - Components:
   - Okta On-Prem SCIM Server
-  - Oracle JDK (bundled with SCIM server)
-  - Custom JDBC drivers (in userlib)
+  - OpenJDK 21 Headless (system package: java-21-openjdk-headless)
+  - Oracle JDK 21 (bundled with SCIM server RPM as fallback)
+  - MySQL Connector/J (auto-downloaded during build from Maven Central)
+  - Custom JDBC drivers (optional, placed in userlib)
 - Volumes:
   - `./data/okta-scim/logs` → `/var/log/OktaOnPremScimServer/`
   - `./data/okta-scim/conf` → `/etc/OktaOnPremScimServer/`
@@ -127,15 +130,17 @@ Before building, you must provide these files in separate directories for each c
    - Example: `OktaOnPremScimServer-1.5.0-1765324800.ef8fae9.rpm`
 
 2. **JDBC Drivers**: `*.jar` files
-   - **Required**: Yes
+   - **Required**: No (MySQL Connector/J is auto-downloaded during build)
+   - **Auto-Downloaded**: MySQL Connector/J 9.6.0 from Maven Central
+   - **Optional**: Place additional JDBC drivers here for other databases
    - Generic JDBC connector info: https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm
-   - Examples:
-     - MySQL Connector/J: `mysql-connector-j-9.6.0.jar` (primary for MariaDB)
-     - MySQL Connector/J (legacy): `mysql-connector-java-*.jar`
-     - MariaDB Connector/J: `mariadb-java-client-*.jar` (alternative)
+   - Examples of additional drivers:
+     - MariaDB Connector/J: `mariadb-java-client-*.jar` (alternative to MySQL Connector/J)
      - PostgreSQL: `postgresql-*.jar`
-   - Placed in: `/opt/OktaOnPremScimServer/userlib/` during container startup
-   - Download MySQL Connector/J from: https://dev.mysql.com/downloads/connector/j/ (select 'Platform Independent' to get the .jar file)
+     - Oracle: `ojdbc*.jar`
+     - SQL Server: `mssql-jdbc-*.jar`
+   - **All `*.jar` files** in this directory are automatically copied to `/opt/OktaOnPremScimServer/userlib/` during container build
+   - Download additional drivers from vendor websites or Maven Central
 
 3. **CA Certificates**: `*.pem` or `*.crt` files
    - **Required**: No (optional)
@@ -378,9 +383,10 @@ The `check-prereqs` target automatically runs before `start`, `start-live`, `sta
    - Checks for: `./docker/okta-scim/packages/OktaOnPremScimServer-*.rpm`
    - Error if missing with download link
 
-3. **JDBC Driver JAR Files**:
+3. **JDBC Driver JAR Files** (optional):
    - Checks for: `./docker/okta-scim/packages/*.jar`
-   - Error if missing with examples
+   - **Info message only** (non-blocking) - MySQL Connector/J is auto-downloaded during build
+   - Additional drivers are optional for other databases (PostgreSQL, Oracle, SQL Server, etc.)
 
 4. **Certificate Files** (optional):
    - Checks for: `./docker/okta-opp/packages/*.pem` and `./docker/okta-scim/packages/*.pem`
@@ -433,8 +439,9 @@ This executes: `docker compose exec okta-opp /opt/OktaProvisioningAgent/configur
    # Copy SCIM Server files to docker/okta-scim/packages/:
    # Required:
    # - OktaOnPremScimServer-*.rpm
-   # - JDBC driver JAR files (*.jar) - e.g., mysql-connector-j-9.6.0.jar
-   # Optional (warning only):
+   # Optional (info only):
+   # - Additional JDBC driver JAR files (*.jar) for other databases (PostgreSQL, Oracle, SQL Server, etc.)
+   #   MySQL Connector/J is auto-downloaded during build
    # - Certificate files (*.pem or *.crt) - for custom VPN support
    ```
 
@@ -948,7 +955,9 @@ Note: The SQL scripts only run on first database initialization. For existing da
 - MariaDB: 11 Alpine
 - DBGate: Latest
 - CentOS: Stream 9 Minimal
-- Oracle JDK: 21.0.9
+- OpenJDK: 21 Headless (system package)
+- Oracle JDK: 21 (bundled with OPP Agent and SCIM Server RPMs)
+- MySQL Connector/J: 9.6.0 (auto-downloaded from Maven Central)
 - OPP Agent: Version from RPM (varies)
 - SCIM Server: Version from RPM (varies)
 

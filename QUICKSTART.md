@@ -15,21 +15,23 @@ Get up and running with Okta OPP Agent + SCIM Server for Generic Database in min
 Download from Okta Help Center:
 - **OPP Agent RPM**: [Doc](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
 - **SCIM Server RPM**: [Doc](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
-- **JDBC Driver**: [MySQL Connector/J](https://dev.mysql.com/downloads/connector/j/) (select 'Platform Independent' to get the .jar file)
+- **JDBC Driver**: Not required - MySQL Connector/J is auto-downloaded during build. Only needed for other databases (PostgreSQL, Oracle, SQL Server)
 ### 2. Organize Package Files
 
 ```bash
 # Copy OPP Agent RPM
 cp OktaProvisioningAgent-*.rpm ./docker/okta-opp/packages/
 
-# Copy SCIM Server RPM and JDBC driver
+# Copy SCIM Server RPM
 cp OktaOnPremScimServer-*.rpm ./docker/okta-scim/packages/
-cp mysql-connector-j-*.jar ./docker/okta-scim/packages/
 
-# If using VPN with custom certificates (e.g., PaloAlto GlobalProtect/Prisma Access)
-# Example
-cp ../your_path/your_vpn_certificates.pem ./docker/okta-opp/packages/
-cp ../your_path/your_vpn_certificates.pem ./docker/okta-scim/packages/
+# Optional: Copy additional JDBC drivers for other databases (PostgreSQL, Oracle, SQL Server, etc.)
+# MySQL Connector/J is auto-downloaded during build
+# cp postgresql-*.jar ./docker/okta-scim/packages/
+
+# Optional: If using VPN with custom certificates (e.g., PaloAlto GlobalProtect/Prisma Access)
+# cp ../your_path/your_vpn_certificates.pem ./docker/okta-opp/packages/
+# cp ../your_path/your_vpn_certificates.pem ./docker/okta-scim/packages/
 ```
 
 ### 3. Configure Environment

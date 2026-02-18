@@ -132,7 +132,7 @@ The project now uses separate directories for OPP Agent and SCIM Server packages
 | File | Required | Description | Download |
 |------|----------|-------------|----------|
 | `OktaOnPremScimServer-*.rpm` | Yes | SCIM Server installer | [Download from Okta](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm) |
-| `*.jar` (JDBC drivers) | Yes | Database drivers | [MySQL Connector/J](https://dev.mysql.com/downloads/connector/j/?os=26) (select 'Platform Independent' to get the .jar file)|
+| `*.jar` (JDBC drivers) | No | Additional database drivers (optional) | MySQL Connector/J is auto-downloaded. For other databases: [PostgreSQL](https://jdbc.postgresql.org/), [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html), [SQL Server](https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server) |
 | `*.pem` or `*.crt` (certificates) | No | Custom VPN certificates | Copy your VPN provider root CA |
 
 > ℹ️ **Info**: Certificate files are only needed if you're connecting through a VPN with custom CA certificates (e.g., Palo Alto GlobalProtect, Prisma Access). If you don't have custom VPN certificates, you can ignore the warnings during startup.
@@ -147,8 +147,8 @@ The project now uses separate directories for OPP Agent and SCIM Server packages
 # - *.pem or *.crt (optional, for custom VPN)
 
 # Copy SCIM Server Install files to docker/okta-scim/packages/:
-# - OktaOnPremScimServer-*.rpm
-# - mysql-connector-j-*.jar (or your database driver)
+# - OktaOnPremScimServer-*.rpm (required)
+# - *.jar files for additional databases (optional - MySQL Connector/J auto-downloaded)
 # - *.pem or *.crt (optional, for custom VPN)
 ```
 
@@ -440,12 +440,11 @@ ERROR: Okta Provisioning Agent RPM not found!
 - OPP Agent: `./docker/okta-opp/packages/`
 - SCIM Server: `./docker/okta-scim/packages/`
 
-**Missing JDBC drivers**:
+**JDBC driver info message**:
 ```
-ERROR: JDBC driver JAR files not found!
+INFO: JDBC driver JAR files not found! The MySQL JDBC driver will be downloaded automatically during build.
 ```
-**Solution**: Download JDBC driver and place in `./docker/okta-scim/packages/`:
-- MySQL Connector/J: https://dev.mysql.com/downloads/connector/j/ (select 'Platform Independent' to get the .jar file)
+**Note**: This is informational only. MySQL Connector/J is automatically downloaded during build. You only need to manually add JDBC drivers for other databases (PostgreSQL, Oracle, SQL Server, etc.)
 
 ### Agent Not Starting
 
@@ -477,7 +476,7 @@ tail -f ./data/okta-scim/logs/*.log
 
 **Common issues**:
 1. **Wrong JDBC URL**: Verify database host is `db` (not `localhost`)
-2. **Missing drivers**: Ensure `.jar` files are in `./docker/okta-scim/packages/`
+2. **Missing drivers for non-MySQL databases**: If using PostgreSQL/Oracle/SQL Server, ensure appropriate `.jar` files are in `./docker/okta-scim/packages/` (MySQL Connector/J is auto-downloaded)
 3. **Database not ready**: Check database health with `docker compose ps db`
 4. **Bearer token format**: Ensure you added `Bearer ` prefix when configuring the Okta app
 
@@ -653,7 +652,7 @@ For other databases (Oracle, SQL Server, etc.):
 3. Rebuild the container: `make rebuild`
 4. Configure SCIM Server with database-specific connection string
 
-The JDBC drivers are automatically copied to `/opt/OktaOnPremScimServer/userlib/` during container build.
+**Note**: MySQL Connector/J 9.6.0 is automatically downloaded from Maven Central during build. All `.jar` files in `./docker/okta-scim/packages/` are copied to `/opt/OktaOnPremScimServer/userlib/` during container build.
 
 ## 📚 Resources
 
