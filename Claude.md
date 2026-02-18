@@ -247,7 +247,7 @@ The database includes 6 operational views for monitoring and reporting:
 These views are defined in `sql/init.sql` and provide convenient access to commonly queried data.
 
 **See also**:
-- [doc/Okta_Provisioning_Configuration.md](doc/Okta%20Provisioning%20Configuration.md) for detailed step-by-step configuration instructions in the Okta Admin Console.
+- [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md) for detailed step-by-step configuration instructions in the Okta Admin Console.
 - [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md) for technical details about the SCIM Server's internal architecture and API endpoints.
 
 ## Configuration
