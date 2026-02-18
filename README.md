@@ -20,7 +20,7 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
   - [Lab Components](#lab-components)
   - [Architecture](#architecture)
 - [Prerequisites](#-prerequisites)
-- [Quick Start](#-quick-start)
+- [Compose Start](#-compose-start)
 - [Configuration](#-configuration)
   - [Environment Variables](#environment-variables)
   - [Database Initialization](#database-initialization)
@@ -140,7 +140,7 @@ The project now uses separate directories for OPP Agent and SCIM Server packages
 
 > ℹ️ **Info**: Certificate files are only needed if you're connecting through a VPN with custom CA certificates (e.g., Palo Alto GlobalProtect, Prisma Access). If you don't have custom VPN certificates, you can ignore the warnings during startup.
 
-## 🚀 Quick Start
+## 🚀 Compose Start
 
 ### 1. Prepare Required Files
 
