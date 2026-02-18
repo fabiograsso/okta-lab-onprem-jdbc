@@ -26,10 +26,12 @@ RUN \
             }; \
         fi; \
     done && \
-    microdnf install -y ca-certificates libXt openssl hostname procps java-21-openjdk-headless && \ 
+    microdnf install -y ca-certificates libXt openssl hostname procps java-25-openjdk-headless && \ 
     microdnf clean all && \
-    find /var/cache/yum -type f -delete
-# java-21-openjdk-devel
+    rm -rf /var/cache/yum /var/cache/dnf && \
+    rm -rf /tmp/* /var/tmp/* && \
+    find /var/cache -type f -delete
+
 # Download MySQL Connector/J during build
 ARG MYSQL_CONNECTOR_VERSION=9.6.0
 RUN curl -L -o /packages/mysql-connector-j-${MYSQL_CONNECTOR_VERSION}.jar \

@@ -29,7 +29,9 @@ RUN \
     shopt -u nullglob nocaseglob && \
     microdnf install -y ca-certificates libXt openssl hostname procps && \
     microdnf clean all && \
-    find /var/cache/yum -type f -delete
+    rm -rf /var/cache/yum /var/cache/dnf && \
+    rm -rf /tmp/* /var/tmp/* && \
+    find /var/cache -type f -delete
 
 # Install Okta On-Prem Provisioning Agent 
 RUN rpm -Uvh /packages/OktaProvisioningAgent*.rpm
