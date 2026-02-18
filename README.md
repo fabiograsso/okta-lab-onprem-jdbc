@@ -6,12 +6,12 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 [![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
 
 > 🚀 **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for very fast setup instructions.
-
-> ⚠️ **Warning**: **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
-
+>
+> ⚠️ **Warning**: 🐳 **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
+>
 > 📢 **Note**: This lab environment is designed for testing and demonstration purposes. For production deployments, consult the [official Okta documentation](https://help.okta.com/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm).
-
-
+>
+>
 > 💡 **Not Using Docker?** This repository is still valuable even if you don't plan to use Docker:
 >
 > 1. **Install on a server** using the [Okta official documentation](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
@@ -33,13 +33,13 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 - [Prerequisites](#-prerequisites)
 - [Compose Start](#-compose-start)
 - [Configure Okta Cloud Integration](#-configure-okta-cloud-integration)
-- [Configuration](#-configuration)
+- [Configuration](#️-configuration)
   - [Environment Variables](#environment-variables)
   - [Database Initialization](#database-initialization)
   - [OPP Agent Configuration](#opp-agent-configuration)
   - [SCIM Server Configuration](#scim-server-configuration)
-- [Database Management](#-database-management)
-- [Makefile Commands](#-makefile-commands)
+- [Database Management](#️-database-management)
+- [Makefile Commands](#️-makefile-commands)
 - [Troubleshooting](#-troubleshooting)
 - [Security & Production Considerations](#-security--production-considerations)
 - [Using Different Databases](#-using-different-databases)
@@ -48,7 +48,7 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 - [Author](#-author)
 - [Disclaimer](#-disclaimer)
 - Other documentation files:
-  - [Fast Start Guide](QUICKSTART.md) - Fast setup in minutes 
+  - [Fast Start Guide](QUICKSTART.md) - Fast setup in minutes
   - [Okta Provisioning Configuration Guide](doc/Okta_Provisioning_Configuration.md)
   - [Okta On-Prem SCIM Server - Technical Documentation](doc/Okta_SCIM_Server.md)
 
@@ -143,14 +143,14 @@ The project now uses separate directories for OPP Agent and SCIM Server packages
 **For OPP Agent** - Place in `./docker/okta-opp/packages/`:
 
 | File | Required | Description | Download |
-|------|----------|-------------|----------|
+| ---- | -------- | ----------- | -------- |
 | `OktaProvisioningAgent-*.rpm` | Yes | OPP Agent installer | [Download from Okta](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm) |
 | `*.pem` or `*.crt` (certificates) | No | Custom VPN certificates | Copy your VPN provider root CA |
 
 **For SCIM Server** - Place in `./docker/okta-scim/packages/`:
 
 | File | Required | Description | Download |
-|------|----------|-------------|----------|
+| ---- | -------- | ----------- | -------- |
 | `OktaOnPremScimServer-*.rpm` | Yes | SCIM Server installer | [Download from Okta](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm) |
 | `*.jar` (JDBC drivers) | No | Additional database drivers (optional) | MySQL Connector/J is auto-downloaded. For other databases: [PostgreSQL](https://jdbc.postgresql.org/), [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html), [SQL Server](https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server) |
 | `*.pem` or `*.crt` (certificates) | No | Custom VPN certificates | Copy your VPN provider root CA |
@@ -195,13 +195,15 @@ make start-logs # (or `make start` for detached mode)
 ```
 
 The `make start` command will:
+
 - Run prerequisite checks
 - Start all containers
 
 ### 4. Configure OPP Agent
 
 Wait for this message in the logs:
-```
+
+```txt
 ⏳ Waiting for configuration files. Please configure the Agent...
 ```
 
@@ -229,7 +231,8 @@ You don't need to run the `systemctl` command since the agent is already running
 
 After the SCIM server starts, the credentials are automatically displayed in the logs. You can also retrieve them from:
 
-**Option A: From host filesystem**
+#### Option A: From host filesystem
+
 ```bash
 # API Token (look for scim.security.bearer.token property)
 cat ./data/okta-scim/conf/config-*.properties | grep bearer.token
@@ -238,7 +241,8 @@ cat ./data/okta-scim/conf/config-*.properties | grep bearer.token
 cat ./data/okta-scim/certs/OktaOnPremScimServer-*.crt
 ```
 
-**Option B: From container**
+#### Option B: From container
+
 ```bash
 # Display credentials
 docker compose exec okta-scim /opt/OktaOnPremScimServer/bin/Get-OktaOnPremScimServer-Credentials.sh
@@ -260,16 +264,17 @@ The Okta Generic Database Connector requires configuration in several areas:
 3. **LCM (LifeCycle Management) Operations**: configure *SQL queries* or *stored procedures* for user lifecycle management (provisioning, deprovisioning, import, update)
 4. **Entitlement Management**: configure how Okta manages user entitlements (roles) in the database (import, assignment, revocation)
 
-### 📘 Detailed Configuration Guide**
+### 📘 Detailed Configuration Guide
+
 See **[doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)** for comprehensive step-by-step instructions with:
 
 - Screenshots and visual guides for each configuration step
-- Complete stored procedure parameter mappings
+- Complete stored procedure (or SQL queries) parameter mappings
 - Import and provisioning operation configuration examples
 - Entitlement management setup
 - Testing procedures and troubleshooting tips
 
-> 💡 Since the configuration involves multiple steps in the Okta Admin Console, I prefer to keep the detailed instructions in a [separate document](doc/Okta_Provisioning_Configuration.md) to maintain clarity and focus in this main README.
+> 📢 **Note**: Since the configuration involves multiple steps in the Okta Admin Console, I prefer to keep the detailed instructions in a [separate document](doc/Okta_Provisioning_Configuration.md) to maintain clarity and focus in this main README.
 
 ---
 
@@ -310,6 +315,7 @@ LOG_LEVEL_SPRING_JDBC=INFO       # Spring JDBC (database operations)
 The database is automatically initialized on first startup with:
 
 **Schema and Test Data** (`sql/init.sql`):
+
 - **USERS** table: Comprehensive user profiles with fields
   - **Identity**: `USER_ID` (PRIMARY KEY), `USERNAME` (UNIQUE), `EMAIL` (NOT NULL)
   - **Personal**: `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `HONORIFICPREFIX`, `DISPLAYNAME`, `NICKNAME`, `BIRTHDATE`
@@ -324,7 +330,8 @@ The database is automatically initialized on first startup with:
 - **Test Data**: 15 Star Wars-themed users from LDIF with realistic job roles, departments, and entitlement assignments
 
 **Stored Procedures** (`sql/stored_proc.sql`):
-The following procedures are available for SCIM operations with support for all 31 user fields:
+The following procedures are available for SCIM operations with support for all the user fields:
+
 1. `GET_ACTIVEUSERS()` - Retrieve all active users with all fields
 2. `GET_USER_BY_ID(p_user_id)` - Query specific user with all fields
 3. `CREATE_USER(...)` - Provision new user (30 parameters)
@@ -341,7 +348,7 @@ The following procedures are available for SCIM operations with support for all 
 10. `REMOVE_ENTITLEMENT_FROM_USER(...)` - Revoke entitlement from user
 
 > 💡 **Tip**: The database also includes 6 operational views (V_USERENTITLEMENTS, V_ACTIVE_USERS, V_INACTIVE_USERS, V_ENTITLEMENT_USAGE, V_USER_HIERARCHY, V_INACTIVE_USERENTITLEMENTS) for convenient monitoring and reporting queries.
-
+>
 > 📖 **Reference**: These stored procedures are based on the Oracle examples from Appendix A of the Generic Database Connector documentation, adapted for MySQL/MariaDB.
 
 ### OPP Agent Configuration
@@ -366,18 +373,19 @@ subdomain = your-subdomain
 SCIM Server configuration is automatically generated and stored in `./data/okta-scim/`:
 
 **Configuration Locations**:
+
 - **Properties**: `./data/okta-scim/conf/config-*.properties` - Spring Boot configuration
 - **Certificates**: `./data/okta-scim/certs/OktaOnPremScimServer-*.crt` - Auto-generated public certificate
 - **Private Keys**: `./data/okta-scim/certs/OktaOnPremScimServer-*.key` - Auto-generated private key
 - **Keystores**: `./data/okta-scim/certs/OktaOnPremScimServer-*.p12` - PKCS12 keystore
 - **Logs**: `./data/okta-scim/logs/` - SCIM Server application logs
 
-
 > 📢 **Note**: The SCIM server automatically generates a 4096-bit RSA key pair and self-signed certificate on first startup.
 > The configuration file is overwritten at every restart of the container, so manual changes will not persist. To change the configuration, you can either:
+>
 > 1. Update the `docker-compose.yml` to mount a custom configuration file (make sure to include all required properties)
 > 2. Use environment variables to override specific properties (e.g., logging levels)
-
+>
 > 📖 **Advanced**: For detailed technical information about the SCIM Server's internal architecture, API endpoints, and direct API testing, see [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md).
 
 ---
@@ -387,18 +395,26 @@ SCIM Server configuration is automatically generated and stored in `./data/okta-
 ### Pre-Populated Test Data
 
 The database is automatically initialized with:
+
 - **15 Star Wars characters** as test users (Luke Skywalker, Leia Organa, Han Solo, etc.)
 - **10 entitlements** (VPN Access, GitHub Admin, AWS Console, Jira Admin, etc.)
 - **Realistic entitlement assignments** based on job roles (Senior Dev, Manager, DevOps Engineer patterns)
 
+> 📢 **Note**: If you want to reset the database to its initial state, simply stop the containers, delete the `./data/mysql/` directory, and restart:
+>
+> ```bash
+> make stop
+> rm -rf ./data/mysql/
+> make start
+> ```
+>
+> This will trigger the initialization scripts to run again and re-populate the database.
+
 ### Access DBGate (Web Interface)
 
-1. Open your browser to http://localhost:8090
-2. The MariaDB connection is pre-configured:
-   - **Host**: db
-   - **Database**: oktademo
-   - **User**: root
-   - **Password**: oktademo (from MARIADB_ROOT_PASSWORD)
+Open your browser to <http://localhost:8090>
+
+> 📢 **Note**: The MariaDB connection is pre-configured with the hostname and the credentials from the `.env` file.
 
 ### Command Line Access
 
@@ -430,22 +446,22 @@ CALL GET_USER_ENTITLEMENT('luke.skywalker@galaxy.local');
 ## 🛠️ Makefile Commands
 
 | Command | Description |
-|---------|-------------|
+| ------- | ----------- |
 | `make help` | Display all available commands |
 | `make check-prereqs` | Run prerequisite checks without starting services |
 | `make build` | Build Docker images (with prereq checks) |
 | `make rebuild` | Force rebuild from scratch (no cache) |
-| `make start` | Start services in detached mode (with prereq checks) |
+| `make start` | Start services in detached mode |
 | `make start-live` | Start services in foreground mode |
-| `make start-logs` | Start services and follow logs |
+| `make start-logs` | Start services in detached mode and follow logs |
 | `make stop` | Stop and remove all containers |
 | `make restart` | Restart all services |
 | `make restart-logs` | Restart and follow logs |
-| `make logs` | Follow container logs (last 500 lines) |
+| `make logs` | Follow container logs (and show last 500 lines) |
 | `make kill` | Kill containers and remove orphans |
-| `make configure` | Launch interactive agent configuration script |
+| `make configure` | Launch interactive agent configuration script for the OPP Agent |
 
-### Example Workflow
+### Sample Typical Workflow
 
 ```bash
 # Initial setup
@@ -482,17 +498,22 @@ make configure
 ### Prerequisite Check Failures
 
 **Missing RPM files**:
-```
+
+```text
 ERROR: Okta Provisioning Agent RPM not found!
 ```
+
 **Solution**: Download the RPM files from Okta and place in:
+
 - OPP Agent: `./docker/okta-opp/packages/`
 - SCIM Server: `./docker/okta-scim/packages/`
 
 **JDBC driver info message**:
-```
+
+```text
 INFO: JDBC driver JAR files not found! The MySQL JDBC driver will be downloaded automatically during build.
 ```
+
 **Note**: This is informational only. MySQL Connector/J is automatically downloaded during build. You only need to manually add JDBC drivers for other databases (PostgreSQL, Oracle, SQL Server, etc.)
 
 ### Agent Not Starting
@@ -500,10 +521,12 @@ INFO: JDBC driver JAR files not found! The MySQL JDBC driver will be downloaded 
 **Symptoms**: Agent shows "Waiting for configuration files..."
 
 **Solution**: Ensure these files exist in `./data/okta-opp/`:
+
 - `conf/OktaProvisioningAgent.conf` with all required keys
 - `security/OktaProvisioningKeystore.p12`
 
 **Check logs**:
+
 ```bash
 # View OPP Agent logs
 docker compose logs -f okta-opp
@@ -515,6 +538,7 @@ tail -f ./data/okta-opp/logs/agent.log
 ### SCIM Server Connection Failed
 
 **Check SCIM logs**:
+
 ```bash
 # View SCIM Server container logs
 docker compose logs -f okta-scim
@@ -524,14 +548,16 @@ tail -f ./data/okta-scim/logs/*.log
 ```
 
 **Common issues**:
+
 1. **Wrong JDBC URL**: Verify database host is `db` (not `localhost`)
 2. **Missing drivers for non-MySQL databases**: If using PostgreSQL/Oracle/SQL Server, ensure appropriate `.jar` files are in `./docker/okta-scim/packages/` (MySQL Connector/J is auto-downloaded)
 3. **Database not ready**: Check database health with `docker compose ps db`
-4. **Bearer token format**: Ensure you added `Bearer ` prefix when configuring the Okta app
+4. **Bearer token format**: Ensure you added `Bearer` prefix when configuring the Okta app
 
 ### Database Connection Issues
 
 **Test database connectivity**:
+
 ```bash
 # Check database health
 docker compose ps db
@@ -548,14 +574,13 @@ docker compose exec db mariadb -u oktademo -poktademo oktademo -e "SELECT COUNT(
 
 ### Certificate Warnings
 
-```
+```text
 WARNING: No certificate file (.pem or .crt) found
 ```
+
 **This is normal**: The warning indicates the containers will work without custom VPN certificates. Only add certificates if you're connecting through a VPN with custom CAs (e.g., Prisma Access, GlobalProtect).
 
-**If you need certificates**: Place `*.pem` or `*.crt` files in both:
-- `./docker/okta-opp/packages/`
-- `./docker/okta-scim/packages/`
+**If you need certificates**: Place `*.pem` or `*.crt` files in both `./docker/okta-opp/packages/` and `./docker/okta-scim/packages/`
 
 ### Enabling Database Query Logging
 
@@ -599,12 +624,14 @@ make restart
 #### View Query Logs
 
 **Real-time monitoring**:
+
 ```bash
 # Follow the general query log in real-time
 docker compose exec db tail -f /var/log/mysql/general.log
 ```
 
 **View recent queries**:
+
 ```bash
 # Show last 100 lines
 docker compose exec db tail -n 100 /var/log/mysql/general.log
@@ -643,6 +670,7 @@ services:
 ```
 
 Then create the directory and restart:
+
 ```bash
 mkdir -p ./data/mysql-logs
 make restart
@@ -651,6 +679,7 @@ make restart
 #### Performance and Security Considerations
 
 > ⚠️ **Important**: The general query log can generate significant I/O and disk usage in production environments:
+>
 > - **Log file growth**: All queries are logged, including SELECT statements
 > - **Performance impact**: Writing to the log file adds overhead to every query
 > - **Disk space**: Log files can grow rapidly with high query volume
@@ -661,9 +690,8 @@ make restart
 ## 🔒 Security & Production Considerations
 
 > ⚠️ **Warning**: This lab uses default credentials for simplicity. **Do not use in production.**
-
-
-> ⚠️ **Warning**: **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
+>
+> ⚠️ **Warning**: 🐳 **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
 
 ### For Production Deployments
 
@@ -671,8 +699,8 @@ make restart
 - **Strong Passwords**: Use complex, unique passwords
 - **Use dedicated service accounts** with minimal permissions
 - **Network Security**:
-   - Isolate the OPP agent in a secure network segment
-   - Use firewall rules to restrict database access
+  - Isolate the OPP agent in a secure network segment
+  - Use firewall rules to restrict database access
 - **Certificate Management**: Use proper SSL/TLS certificates
 - **Monitoring**: Enable logging and alerting
 - **Regular Updates**: Keep agents and databases patched
@@ -686,11 +714,13 @@ make restart
 To use PostgreSQL instead of MariaDB:
 
 1. Update `docker-compose.yml`:
+
    ```yaml
    db:
      image: postgres:16 # Use official PostgreSQL image
      # Update environment variables accordingly
    ```
+
 2. Change sql mountpoint to load appropriate initialization scripts for PostgreSQL
 3. Place appropriate JDBC driver in `./docker/okta-scim/packages/`:
 
@@ -714,7 +744,6 @@ For other databases (Oracle, SQL Server, etc.):
 - [On-premises Connector for Generic Databases](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)
 - [Install the Okta Provisioning Agent](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
 - [Install the Okta On-prem SCIM Server](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
-
 
 ### Technical Documentation
 
@@ -741,7 +770,8 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 👤 Author
 
-**Fabio Grasso**
+### Fabio Grasso
+
 - Blog: [iam.fabiograsso.net](https://iam.fabiograsso.net)
 - GitHub: [@fabiograsso](https://github.com/fabiograsso)
 
@@ -757,8 +787,8 @@ This is a demonstration laboratory environment designed for testing and demonstr
 
 The MySQL Connector/J driver is automatically downloaded during Docker build from Maven Central (Oracle's official distribution). Licensed under GPL v2 with the Universal FOSS Exception.
 
-- License: https://oss.oracle.com/licenses/universal-foss-exception/
-- Source: https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/
+- License: <https://oss.oracle.com/licenses/universal-foss-exception/>
+- Source: <https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/>
 
 The driver is NOT included in the Git repository or any published Docker images — only the Dockerfile build instructions are shared.
 

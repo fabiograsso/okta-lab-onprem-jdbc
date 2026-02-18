@@ -3,41 +3,42 @@
 ---
 
 > ## ⚠️ DISCLAIMER
-> 
+>
 > **This document is NOT official Okta documentation.**
-> 
+>
 > The information contained in this document has been obtained through **reverse engineering and analysis of the Okta On-Prem SCIM Server JAR file** using automated code analysis tools (*Claude Code*). The content is provided for **educational and learning purposes only**.
-> 
-> ### Important Notes
-> 
+>
+> ### Important
+>
 > 1. **No Official Documentation**: Okta does not publish official API documentation or technical specifications for the On-Prem SCIM Server's internal workings.
-> 
+>
 > 2. **Unsupported Use**: The **ONLY officially supported way** to use the Okta On-Prem SCIM Server is:
 >    - Through the **Okta Provisioning Agent (OPP Agent)**
 >    - Via configuration in the **Okta Admin Console**
 >    - Following official Okta documentation and guidelines
-> 
+>
 > 3. **Direct API Access Not Supported**: Directly calling the SCIM Server APIs documented here is **not supported by Okta** and should only be done for:
 >    - Educational purposes
 >    - Testing and debugging in lab environments
 >    - Understanding the system architecture
 >    - Troubleshooting with Okta Support guidance
-> 
+>
 > 4. **Use at Your Own Risk**: Any use of this information outside of the officially supported methods is at your own risk and may:
 >    - Void support agreements
 >    - Cause unexpected behavior
 >    - Break with future updates
 >    - Introduce security vulnerabilities
-> 
+>
 > 5. **Official Documentation**: Always refer to official Okta documentation:
->    - [Install the Okta On-prem SCIM Server](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/> on-prem-scim-install.htm)
->    - [On-premises Connector for Generic Databases](https://help.okta.com/oie/en-us/content/topics/provisioning/> opc/connectors/on-prem-connector-generic-db.htm)
+>    - [Install the Okta On-prem SCIM Server](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
+>    - [On-premises Connector for Generic Databases](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)
 >
 > **By reading this document, you acknowledge that this information is for learning purposes only and that you > will use the Okta On-Prem SCIM Server only through officially supported methods in production environments.**
 
 ---
 
 ## Table of Contents
+
 - [Overview](#overview)
 - [Architecture](#architecture)
 - [Authentication](#authentication)
@@ -103,6 +104,7 @@ flowchart TB
 ### Core Components
 
 #### 1. Embedded Tomcat Server
+
 - **Version**: Apache Tomcat 10.x
 - **Protocol**: HTTPS with NIO connector
 - Bundled with **Spring Boot 3.5.0**:
@@ -112,7 +114,7 @@ flowchart TB
 Located in `BOOT-INF/classes/com/okta/server/scim/controller/`:
 
 | Controller | Purpose | Base Path |
-|------------|---------|-----------|
+| ---------- | ------- | --------- |
 | `UserController.java` | User CRUD operations | `/{app}/scim/v2/Users` |
 | `GroupController.java` | Group operations | `/{app}/scim/v2/Groups` |
 | `EntitlementController.java` | Entitlement management | `/{app}/scim/v2/Entitlements` |
@@ -147,7 +149,7 @@ Located in `BOOT-INF/classes/com/okta/server/scim/security/`:
 
 The SCIM server uses **Bearer token authentication** for all SCIM API requests.
 
-#### Configuration
+#### Configuration of the Token
 
 Bearer token is configured in the properties file:
 
@@ -162,11 +164,13 @@ This token is **auto-generated** during first startup by the RPM installer (or i
 #### Usage
 
 **Header Format**:
-```
+
+```txt
 Authorization: Bearer <token>
 ```
 
 **Example**:
+
 ```bash
 curl -k -H "Authorization: Bearer d5307740c879491cedecf70c2225776b" \
   https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/Status
@@ -187,11 +191,12 @@ curl -k -H "Authorization: Bearer d5307740c879491cedecf70c2225776b" \
 
 All SCIM endpoints follow this pattern:
 
-```
+```http
 https://{host}:{port}/ws/rest/{app}/scim/v2/{resource}
 ```
 
 Where:
+
 - `{host}`: SCIM server hostname (e.g., `okta-scim` or `localhost`)
 - `{port}`: SCIM server port (default: `1443`)
 - `{app}`: Application/connector name (e.g., `jdbc_on_prem`)
@@ -204,6 +209,7 @@ In addition to the **[Authentication header (Bearer Token)](#authentication)**, 
 **Base Path**: `{app}/scim/v2/Users`
 
 #### List Users
+
 ```http
 GET /{app}/scim/v2/Users?startIndex=1&count=100
 Authorization: Bearer {token}
@@ -211,6 +217,7 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 ```
 
 **Query Parameters**:
+
 - `startIndex` (optional): Starting index for pagination (1-based)
 - `count` (optional): Number of results to return
 - `filter` (optional): SCIM filter expression
@@ -218,6 +225,7 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 **Response**: SCIM ListResponse with user resources
 
 #### Get User by ID
+
 ```http
 GET /{app}/scim/v2/Users/{userId}
 Authorization: Bearer {token}
@@ -225,11 +233,13 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 ```
 
 **Path Parameters**:
+
 - `{userId}`: User identifier (typically email or username)
 
 **Response**: SCIM User resource
 
 #### Create User
+
 ```http
 POST /{app}/scim/v2/Users
 Authorization: Bearer {token}
@@ -256,6 +266,7 @@ Content-Type: application/json
 **Response**: 201 Created with SCIM User resource
 
 #### Update User
+
 ```http
 PUT /{app}/scim/v2/Users/{userId}
 Authorization: Bearer {token}
@@ -281,6 +292,7 @@ Content-Type: application/json
 **Base Path**: `{app}/scim/v2/Groups`
 
 #### List Groups
+
 ```http
 GET /{app}/scim/v2/Groups
 Authorization: Bearer {token}
@@ -294,6 +306,7 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 **Base Path**: `{app}/scim/v2/Entitlements`
 
 #### List Entitlements
+
 ```http
 GET /{app}/scim/v2/Entitlements
 Authorization: Bearer {token}
@@ -303,6 +316,7 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 **Response**: SCIM ListResponse with entitlement resources
 
 #### Get Entitlement by ID
+
 ```http
 GET /{app}/scim/v2/Entitlements/{id}
 Authorization: Bearer {token}
@@ -314,6 +328,7 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 ### SCIM Metadata Endpoints
 
 #### Service Provider Configuration
+
 ```http
 GET /{app}/scim/v2/ServiceProviderConfig
 Authorization: Bearer {token}
@@ -323,6 +338,7 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 Returns SCIM server capabilities (supported operations, bulk operations, filtering, etc.)
 
 #### Schemas
+
 ```http
 GET /{app}/scim/v2/Schemas
 Authorization: Bearer {token}
@@ -332,6 +348,7 @@ X-OKTA-ONPREM-DATA: {base64_encoded_config}
 Returns SCIM schema definitions for User, Group, and custom resources.
 
 #### Resource Types
+
 ```http
 GET /{app}/scim/v2/ResourceTypes
 Authorization: Bearer {token}
@@ -355,13 +372,15 @@ The Status endpoint is the **only endpoint that does NOT require the `X-OKTA-ONP
 **Authentication**: Bearer token only
 
 **Example**:
+
 ```bash
 curl -k -H "Authorization: Bearer d5307740c879491cedecf70c2225776b" \
   https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/Status
 ```
 
 **Success Response**:
-```
+
+```txt
 HTTP/1.1 200 OK
 Content-Type: text/plain;charset=UTF-8
 Content-Length: 27
@@ -370,6 +389,7 @@ Content-Length: 27
 ```
 
 **Use Cases**:
+
 - Docker health checks
 - Load balancer health probes
 - Monitoring systems (Nagios, Prometheus, etc.)
@@ -386,6 +406,7 @@ The `X-OKTA-ONPREM-DATA` header is a **custom HTTP header** that contains the **
 ### Contents
 
 The header contains a **Base64-encoded JSON payload** with:
+
 - **Database connection details**: JDBC URL, username, password
 - **Stored procedure mappings**: Which stored procedures to call for each SCIM operation
 - **Attribute mappings**: How SCIM attributes map to database columns/parameters
@@ -585,6 +606,7 @@ The entrypoint script automatically generates:
 **Location**: `/var/log/OktaOnPremScimServer/` (mapped to `data/okta-scim/logs/` on host if using my Docker Compose implementation)
 
 **Files**:
+
 - `application.log` - Main application log
 
 ### Log Levels
@@ -607,12 +629,14 @@ logging.level.org.springframework.jdbc=DEBUG          # JDBC operations
 ### Log Format
 
 **File Pattern**:
-```
+
+```txt
 %d{yyyy-MM-dd'T'HH:mm:ss.SSSXXX}  [pid:${PID:-unknown}] [%thread] %class{36}:%line - %msg%n
 ```
 
 **Example**:
-```
+
+```txt
 2026-02-17T11:54:32.123+00:00  [pid:42] [https-jsse-nio-1443-exec-1] c.o.s.s.controller.UserController:87 - Creating user: john.doe@example.com
 ```
 
@@ -625,6 +649,7 @@ logging.level.org.springframework.jdbc.core=TRACE
 ```
 
 This logs:
+
 - SQL statements before execution
 - Parameter values
 - Result sets
@@ -633,27 +658,35 @@ This logs:
 ### Common Log Patterns
 
 **TLS Handshake Failures**:
-```
+
+```txt
 Handshake failed for client connection from IP address [192.168.65.1]
 ```
+
 **Cause**: Client doesn't trust the self-signed certificate (expected)
 
 **Missing Header**:
-```
+
+```txt
 Missing X-OKTA-ONPREM-DATA header
 ```
+
 **Cause**: Direct API call without Okta Provisioning Agent
 
 **JDBC Connection Issues**:
-```
+
+```txt
 HikariPool - Exception during pool initialization
 ```
+
 **Cause**: Database not reachable or credentials incorrect
 
 **Stored Procedure Errors**:
-```
+
+```txt
 CallableStatementCallback; ERROR 1305 (42000): PROCEDURE oktademo.CREATE_USER does not exist
 ```
+
 **Cause**: Stored procedure not created in database
 
 ---
@@ -682,6 +715,7 @@ app.datasource.hikari.initializationFailTimeout=0     # Fail immediately
 **Copied from**: `docker/okta-scim/packages/*.jar`
 
 **Supported Drivers**:
+
 - MySQL Connector/J: `mysql-connector-j-9.6.0.jar`
 - PostgreSQL: `postgresql-*.jar`
 - Oracle JDBC: `ojdbc*.jar`
@@ -707,16 +741,19 @@ Database connection details are provided in the `X-OKTA-ONPREM-DATA` header on e
 ### JVM Tuning
 
 **For small workloads** (< 100 users):
+
 ```bash
 JAVA_OPTS="-Xmx1024m -Xms512m -XX:+UseG1GC"
 ```
 
 **For medium workloads** (100-1000 users):
+
 ```bash
 JAVA_OPTS="-Xmx2048m -Xms1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 ```
 
 **For large workloads** (1000+ users):
+
 ```bash
 JAVA_OPTS="-Xmx4096m -Xms2048m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ParallelRefProcEnabled"
 ```
@@ -724,6 +761,7 @@ JAVA_OPTS="-Xmx4096m -Xms2048m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+Parall
 ### HikariCP Tuning
 
 **For high throughput**:
+
 ```properties
 app.datasource.hikari.maximumPoolSize=20
 app.datasource.hikari.minimumIdle=5
@@ -731,6 +769,7 @@ app.datasource.hikari.connectionTimeout=30000
 ```
 
 **For low latency**:
+
 ```properties
 app.datasource.hikari.maximumPoolSize=10
 app.datasource.hikari.minimumIdle=2

@@ -26,6 +26,7 @@ This guide provides detailed instructions for configuring the Okta Generic Datab
 ## Overview
 
 The Generic Database Connector in Okta supports two types of operations:
+
 - **Import Operations (To Okta)**: Import users and entitlements from your database into Okta
 - **Provisioning Operations (To App)**: Create, update, activate, deactivate users and manage entitlements
 
@@ -34,6 +35,7 @@ This lab environment uses stored procedures to handle these operations, providin
 ## Prerequisites
 
 Before configuring Okta provisioning, ensure:
+
 1. ✅ OPP Agent is running and connected to Okta
 2. ✅ SCIM Server is running  
 3. ✅ Database is initialized with schema and stored procedures (from `sql/init.sql` and `sql/stored_proc.sql`)
@@ -43,7 +45,7 @@ Before configuring Okta provisioning, ensure:
 This configuration uses the following database tables:
 
 | Table | Description | Fields |
-|-------|-------------|--------|
+| ----- | ----------- | ------ |
 | **USERS** | Comprehensive user profiles | `USER_ID` (PK), `USERNAME` (UNIQUE), `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `HONORIFICPREFIX`, `EMAIL`, `DISPLAYNAME`, `NICKNAME`, `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `POSTALADDRESS`, `TIMEZONE`, `DEPARTMENT`, `MANAGERID`, `WORKLOCATION`, `EMERGENCYCONTACT`, `PASSWORD_HASH`, `IS_ACTIVE`, `COSTCENTER`, `MANAGER`, `TITLE`, `HIREDATE`, `TERMINATIONDATE`, `BIRTHDATE`, `EMPLOYEENUMBER` |
 | **ENTITLEMENTS** | Available entitlements | `ENT_ID` (PK), `ENT_NAME`, `ENT_DESCRIPTION` |
 | **USERENTITLEMENTS** | User-entitlement mappings | `USERENTITLEMENT_ID` (PK), `USER_ID` (FK), `ENT_ID` (FK), `ASSIGNEDDATE` |
@@ -52,7 +54,6 @@ This configuration uses the following database tables:
 - **Optional USERS fields**: All other 25 fields can be NULL
 
 > 💡 The lab includes **15 test users** (Star Wars characters) with pre-configured entitlements.
-
 
 ### Database Diagram
 
@@ -88,13 +89,12 @@ erDiagram
     }
 ```
 
-
 ## Stored Procedures Reference
 
 All stored procedures are defined in `sql/stored_proc.sql`:
 
 | Procedure | Parameters | Purpose |
-|-----------|------------|---------|
+| --------- | ---------- | ------- |
 | `GET_ACTIVEUSERS()` | None | Retrieve all active users (all fields) |
 | `GET_ALL_ENTITLEMENTS()` | None | Retrieve all entitlements |
 | `GET_USER_BY_ID(p_user_id)` | p_user_id VARCHAR(100) | Get specific user details (all fields) |
@@ -166,7 +166,6 @@ flowchart TB
     classDef entitlementStyle fill:#f8d7da,stroke:#dc3545,stroke-width:2px
 ```
 
-
 ## Create Generic Database Connector Application
 
 Before configuring the provisioning operations, you need to create the Generic Database Connector application in your Okta org.
@@ -222,13 +221,13 @@ Before configuring the provisioning operations, you need to create the Generic D
 
 9. **Configure SCIM Server Connection**
    - Enter the **SCIM Hostname**: `okta-scim` (must match the container name for internal connectivity)
-   - Enter the **API Token** with the `Bearer ` prefix (from SCIM Server credentials)
+   - Enter the **API Token** with the `Bearer` prefix (from SCIM Server credentials)
      - Example: `Bearer d5307740c879491cedecf70c2225776b`
    - Click **Add Files** under **Public Key**
    - Upload the certificate file (`.crt`) from `./data/okta-scim/certs/OktaOnPremScimServer-*.crt`
    - Click **Next**
 
-   > 🔑 **IMPORTANT**: When configuring the Okta application, you **MUST** add the `Bearer ` prefix before the token value.
+   > 🔑 **IMPORTANT**: When configuring the Okta application, you **MUST** add the `Bearer` prefix before the token value.
    >
    > Example: If the token is `da655feabd8ec0c3f89c1fb6e9f0ad39`, you must enter:
    > `Bearer da655feabd8ec0c3f89c1fb6e9f0ad39`
@@ -250,7 +249,7 @@ Before configuring the provisioning operations, you need to create the Generic D
         - Value: `true`
     - Click **Setup Complete**
 
-   ![Configure MySQL database connection details including credentials and allowMultiQueries property](img/okta-database-connection-config.png)
+      ![Configure MySQL database connection details including credentials and allowMultiQueries property](img/okta-database-connection-config.png)
 
 11. You will see a **Connecting agents...** pop-up for a few seconds.
 
@@ -268,10 +267,10 @@ The Generic Database Connector supports two approaches for configuring database 
 **This guide provides both options** for each operation, allowing you to choose the approach that best fits your requirements and database architecture.
 Stored procedures are pre-configured in [sql/stored_proc.sql](../sql/stored_proc.sql) and are the recommended approach.
 
-
 > 📘 **Stored Procedures** are pre-compiled SQL code blocks stored in the database that can be executed with a single call. They act as reusable functions that encapsulate complex queries and business logic.
 >
 > **Key Benefits:**
+>
 > - **Security**: Parameters are automatically handled, preventing SQL injection attacks
 > - **Performance**: Pre-compiled and optimized by the database engine
 > - **Maintainability**: Centralized logic makes updates easier without changing Okta configuration
@@ -307,17 +306,18 @@ These operations import data from your database into Okta.
 Import all active users from the database.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE IS_ACTIVE = 1
-      ```
+      - Enter SQL query:
+         ```sql
+         SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE IS_ACTIVE = 1
+         ```
 - Option 2 - Select **Stored Procedure** (Recommended)
-   - Enter stored procedure call:
-      ```sql
-      CALL GET_ACTIVEUSERS()
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL GET_ACTIVEUSERS()
+         ```
 - **User ID Column:** `USER_ID`
 
 💡 **What it does:** Retrieves all active users (where `IS_ACTIVE = 1`) with all fields from the USERS table.
@@ -331,17 +331,18 @@ Import all active users from the database.
 Import all available entitlements from the database.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      SELECT ENT_ID, ENT_NAME, ENT_DESCRIPTION FROM ENTITLEMENTS
-      ```
+      - Enter SQL query:
+         ```sql
+         SELECT ENT_ID, ENT_NAME, ENT_DESCRIPTION FROM ENTITLEMENTS
+         ```
 - Option 2 - Select **Stored Procedure**
-   - Enter stored procedure call:
-      ```sql
-      CALL GET_ALL_ENTITLEMENTS
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL GET_ALL_ENTITLEMENTS
+         ```
 - **Entitlement ID Column:** `ENT_ID`
 - **Entitlement Display Column:** `ENT_NAME`
 
@@ -354,19 +355,20 @@ Import all available entitlements from the database.
 Retrieve specific user details by their USER_ID.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE USER_ID = ?
-      ```
+      - Enter SQL query:
+         ```sql
+         SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE USER_ID = ?
+         ```
 - Option 2 - Select **Stored Procedure** (Recommended)
-   - Enter stored procedure call:
-      ```sql
-      CALL GET_USER_BY_ID(?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL GET_USER_BY_ID(?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Queries a specific user from the USERS table using their USER_ID, returning all fields.
 
@@ -377,23 +379,24 @@ Retrieve specific user details by their USER_ID.
 Retrieve all entitlements assigned to a specific user.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      SELECT UE.USERENTITLEMENT_ID, UE.USER_ID, U.USERNAME, U.EMAIL, UE.ENT_ID, E.ENT_NAME, E.ENT_DESCRIPTION, UE.ASSIGNEDDATE 
-      FROM USERENTITLEMENTS UE 
-      JOIN USERS U ON UE.USER_ID = U.USER_ID 
-      JOIN ENTITLEMENTS E ON UE.ENT_ID = E.ENT_ID 
-      WHERE UE.USER_ID = ?
-      ```
+      - Enter SQL query:
+         ```sql
+         SELECT UE.USERENTITLEMENT_ID, UE.USER_ID, U.USERNAME, U.EMAIL, UE.ENT_ID, E.ENT_NAME, E.ENT_DESCRIPTION, UE.ASSIGNEDDATE
+         FROM USERENTITLEMENTS UE
+         JOIN USERS U ON UE.USER_ID = U.USER_ID
+         JOIN ENTITLEMENTS E ON UE.ENT_ID = E.ENT_ID
+         WHERE UE.USER_ID = ?
+         ```
 - Option 2 - Select **Stored Procedure**
-   - Enter stored procedure call:
-      ```sql
-      CALL GET_USER_ENTITLEMENT(?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL GET_USER_ENTITLEMENT(?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Queries the USERENTITLEMENTS table to retrieve all entitlements for a user with JOIN to USERS and ENTITLEMENTS tables.
 
@@ -416,48 +419,49 @@ These operations provision changes from Okta to your database.
 Create a new user in the database when assigned in Okta.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      INSERT INTO USERS (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME, HONORIFICPREFIX, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ```
+      - Enter SQL query:
+         ```sql
+         INSERT INTO USERS (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME, HONORIFICPREFIX, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ```
 - Option 2 - Select **Stored Procedure** (Recommended)
-   - Enter stored procedure call:
-      ```sql
-      CALL CREATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL CREATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
-   - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
-   - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
-   - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
-   - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
-   - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-   - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
-   - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-   - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
-   - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-   - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-   - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
-   - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
-   - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
-   - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-   - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
-   - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
-   - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-   - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
-   - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
-   - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
-   - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
-   - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
-   - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
-   - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
-   - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
-   - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-   - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
-   - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
+      - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
+      - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
+      - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
+      - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
+      - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
+      - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
+      - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
+      - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
+      - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
+      - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
+      - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
+      - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
+      - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
+      - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
+      - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
+      - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
+      - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
+      - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
+      - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
+      - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
+      - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
+      - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
+      - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
+      - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
+      - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
+      - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
+      - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
+      - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
 
 💡 **What it does:** Inserts a new row into the USERS table with all user attributes. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
@@ -470,49 +474,50 @@ Create a new user in the database when assigned in Okta.
 Update existing user attributes in the database.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      UPDATE USERS
-      SET USERNAME = ?, FIRSTNAME = ?, LASTNAME = ?, EMAIL = ?, MIDDLENAME = ?, HONORIFICPREFIX = ?, DISPLAYNAME = ?, NICKNAME = ?, MOBILEPHONE = ?, STREETADDRESS = ?, CITY = ?, STATE = ?, ZIPCODE = ?, COUNTRYCODE = ?, POSTALADDRESS = ?, TIMEZONE = ?, DEPARTMENT = ?, MANAGERID = ?, WORKLOCATION = ?, EMERGENCYCONTACT = ?, PASSWORD_HASH = ?, COSTCENTER = ?, MANAGER = ?, TITLE = ?, HIREDATE = ?, TERMINATIONDATE = ?, BIRTHDATE = ?, EMPLOYEENUMBER = ?
-      WHERE USER_ID = ?
-      ```
+      - Enter SQL query:
+         ```sql
+         UPDATE USERS
+         SET USERNAME = ?, FIRSTNAME = ?, LASTNAME = ?, EMAIL = ?, MIDDLENAME = ?, HONORIFICPREFIX = ?, DISPLAYNAME = ?, NICKNAME = ?, MOBILEPHONE = ?, STREETADDRESS = ?, CITY = ?, STATE = ?, ZIPCODE = ?, COUNTRYCODE = ?, POSTALADDRESS = ?, TIMEZONE = ?, DEPARTMENT = ?, MANAGERID = ?, WORKLOCATION = ?, EMERGENCYCONTACT = ?, PASSWORD_HASH = ?, COSTCENTER = ?, MANAGER = ?, TITLE = ?, HIREDATE = ?, TERMINATIONDATE = ?, BIRTHDATE = ?, EMPLOYEENUMBER = ?
+         WHERE USER_ID = ?
+         ```
 - Option 2 - Select **Stored Procedure** (Recommended)
-   - Enter stored procedure call:
-      ```sql
-      CALL UPDATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL UPDATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
-   - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
-   - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
-   - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
-   - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
-   - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-   - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
-   - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-   - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
-   - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-   - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-   - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
-   - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
-   - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
-   - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-   - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
-   - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
-   - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-   - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
-   - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
-   - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
-   - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
-   - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
-   - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
-   - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
-   - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
-   - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-   - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
-   - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
+      - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
+      - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
+      - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
+      - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
+      - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
+      - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
+      - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
+      - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
+      - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
+      - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
+      - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
+      - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
+      - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
+      - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
+      - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
+      - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
+      - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
+      - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
+      - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
+      - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
+      - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
+      - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
+      - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
+      - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
+      - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
+      - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
+      - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
+      - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
 
 💡 **What it does:** Updates the USERS table record matching the USER_ID with new attribute values. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
@@ -525,19 +530,20 @@ Update existing user attributes in the database.
 Activate a user account (set IS_ACTIVE = 1).
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      UPDATE USERS SET IS_ACTIVE = 1 WHERE USER_ID = ?
-      ```
+      - Enter SQL query:
+         ```sql
+         UPDATE USERS SET IS_ACTIVE = 1 WHERE USER_ID = ?
+         ```
 - Option 2 - Select **Stored Procedure**
-   - Enter stored procedure call:
-      ```sql
-      CALL ACTIVATE_USER(?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL ACTIVATE_USER(?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Sets `IS_ACTIVE = TRUE` for the specified user in the USERS table.
 
@@ -548,19 +554,20 @@ Activate a user account (set IS_ACTIVE = 1).
 Deactivate a user account (set IS_ACTIVE = 0).
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      UPDATE USERS SET IS_ACTIVE = 0 WHERE USER_ID = ?
-      ```
+      - Enter SQL query:
+         ```sql
+         UPDATE USERS SET IS_ACTIVE = 0 WHERE USER_ID = ?
+         ```
 - Option 2 - Select **Stored Procedure**
-   - Enter stored procedure call:
-      ```sql
-      CALL DEACTIVATE_USER(?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL DEACTIVATE_USER(?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Sets `IS_ACTIVE = FALSE` for the specified user in the USERS table.
 
@@ -571,20 +578,21 @@ Deactivate a user account (set IS_ACTIVE = 0).
 Assign an entitlement to a user.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      INSERT INTO USERENTITLEMENTS (USER_ID, ENT_ID, ASSIGNEDDATE) VALUES (?, ?, NOW())
-      ```
+      - Enter SQL query:
+         ```sql
+         INSERT INTO USERENTITLEMENTS (USER_ID, ENT_ID, ASSIGNEDDATE) VALUES (?, ?, NOW())
+         ```
 - Option 2 - Select **Stored Procedure**
-   - Enter stored procedure call:
-      ```sql
-      CALL ADD_ENTITLEMENT_TO_USER(?, ?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL ADD_ENTITLEMENT_TO_USER(?, ?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID`
-   - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+      - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
 
 💡 **What it does:** Inserts a new row into the USERENTITLEMENTS table, creating a user-entitlement mapping.
 
@@ -595,20 +603,21 @@ Assign an entitlement to a user.
 Revoke an entitlement from a user.
 
 **Configuration:**
+
 - ✅ Check **Enabled**
 - Option 1 - Select **SQL Satement**
-   - Enter SQL query:
-      ```sql
-      DELETE FROM USERENTITLEMENTS WHERE USER_ID = ? AND ENT_ID = ?
-      ```
+      - Enter SQL query:
+         ```sql
+         DELETE FROM USERENTITLEMENTS WHERE USER_ID = ? AND ENT_ID = ?
+         ```
 - Option 2 - Select **Stored Procedure**
-   - Enter stored procedure call:
-      ```sql
-      CALL REMOVE_ENTITLEMENT_FROM_USER(?, ?)
-      ```
+      - Enter stored procedure call:
+         ```sql
+         CALL REMOVE_ENTITLEMENT_FROM_USER(?, ?)
+         ```
 - **Map Parameters to Fields:**
-   - Parameter 1: `DATABASE_FIELD` → `USER_ID`
-   - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
+      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+      - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
 
 💡 **What it does:** Deletes the row from the USERENTITLEMENTS table matching the user and entitlement.
 
@@ -663,6 +672,7 @@ Before enabling provisioning configurations, you need to update the attributes f
 ### Mapping User Attributes
 
 Attribute mapping must be configured for both directions:
+
 - **Generic Database Connector User → Okta User** (for imports)
 - **Okta User → Generic Database Connector User** (for provisioning)
 
@@ -821,7 +831,6 @@ After configuring import settings, you can manually import users from the databa
 
    ![View imported users in the Assignments tab](img/okta-assignments-imported-users.png)
 
-
 ---
 
 ## Check the entitlements sync
@@ -887,6 +896,7 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
 
 6. **Verify in Database**
    - Check that the user was created in the database:
+
      ```bash
      docker compose exec db mariadb -u oktademo -poktademo oktademo -e "SELECT USER_ID,USERNAME,FIRSTNAME,LASTNAME,EMAIL FROM USERS WHERE EMAIL='testuser@example.com';"
 
@@ -902,9 +912,9 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
 
      ![Verify new user created in DBGate USERS table showing USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL columns](img/dbgate-users-table-verification.png)
 
-
 7. **Verify Entitlements in Database**
    - Check that entitlements were assigned:
+
       ```bash
       docker compose exec db mariadb -u oktademo -poktademo oktademo -e "CALL GET_USER_ENTITLEMENT('testuser@example.com');"
       ```
@@ -935,10 +945,12 @@ Test that attribute changes in Okta are synchronized to the database.
 
 3. **Verify in Database**
    - Check that changes were synced:
+
      ```bash
      docker compose exec db mariadb -u oktademo -poktademo oktademo \
        -e "SELECT USER_ID, TITLE, EMAIL FROM USERS WHERE EMAIL='testuser@example.com';"
      ```
+
      You can also verify with DBGate UI, by opening the `USERS` table.
 
 ---
@@ -957,10 +969,12 @@ Test that unassigning a user from the application deactivates them in the databa
 
 2. **Verify Deactivation in Database**
    - Check that the user's `IS_ACTIVE` flag is set to `0`:
+
      ```bash
      docker compose exec db mariadb -u oktademo -poktademo oktademo \
        -e "SELECT USER_ID, EMAIL, IS_ACTIVE FROM USERS WHERE EMAIL='testuser@example.com';"
      ```
+
      You can also verify with DBGate UI, by opening the `USERS` table or the `v_inactive_users` view.
 
 ---
@@ -973,10 +987,12 @@ Test importing existing users from the database into Okta.
 
 1. **Add Test User to Database**
    - Create a test user directly in the database:
+
       ```bash
       docker compose exec db mariadb -u oktademo -poktademo oktademo -e \
          "CALL CREATE_USER('test.import@galaxy.local', 'test.import', 'Test', 'Import', NULL, NULL, 'test.import@galaxy.local', 'Test Import', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'TEST-DEPT', NULL, NULL, NULL, NULL, NULL, NULL, 'Test User', NULL, NULL, NULL, '9999');"
       ```
+
       or add a new line with DBGate UI, by opening the `USERS` table.
 
       This creates a user with mandatory fields (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL) and a few optional fields (DISPLAYNAME, DEPARTMENT, TITLE, EMPLOYEENUMBER). All other fields are NULL.
@@ -1005,15 +1021,17 @@ Test importing existing users from the database into Okta.
 
 6. **Verify Entitlements in Database**
    - Check that entitlements were assigned:
+
       ```bash
       docker compose exec db mariadb -u oktademo -poktademo oktademo -e "CALL GET_USER_ENTITLEMENT('test.import@galaxy.local');"
       ```
-      You can also verify with DBGate UI, by opening the `USERENTITLEMENTS` table.
 
+      You can also verify with DBGate UI, by opening the `USERENTITLEMENTS` table.
 
 ### Monitor Logs
 
 Check logs for any errors:
+
 ```bash
 # SCIM Server logs
 tail -f ./data/okta-scim/logs/*.log
@@ -1041,7 +1059,8 @@ Once you have the Generic Database Connector set up, you can explore additional 
 #### ValidationException: executeCall not allowed / execute not allowed**
 
 If you see this error:
-```
+
+```txt
 Error code: 400, error: . Errors received from SCIM server by the connector :
 {"schemas":["urn:ietf:params:scim:api:messages:2.0:Error"],"scimType":"INVALID_SYNTAX",
 "detail":"statement=CALL ACTIVATE_USER(?), errors=[ValidationException: executeCall not allowed.,
@@ -1054,21 +1073,24 @@ The operation is configured as "**SQL Statement**" instead of "**Execute Stored 
 2. Navigate to the Provisioning tab → To App / To Okta → Edit
 3. For each operation that calls a stored procedure, ensure **Operation Type** is set to **"Execute Stored Procedure"** (NOT "SQL Statement")
 
-
 #### Stored Procedure Not Found**
+
 - Verify procedures are installed: `docker compose exec db mariadb -u oktademo -poktademo oktademo -e "SHOW PROCEDURE STATUS WHERE Db='oktademo';"`
 - Reinitialize database if needed (see README.md)
 
 #### Parameter Mismatch**
+
 - Ensure parameter count matches the stored procedure definition
 - Check parameter types (DATABASE_FIELD, CURSOR, etc.)
 - Review `sql/stored_proc.sql` for exact signatures
 
 #### Connection Timeout**
+
 - Verify SCIM server is running: `docker compose ps okta-scim`
 - Check database connectivity: `docker compose exec okta-scim mysql -h db -u oktademo -poktademo oktademo -e "SELECT 1;"`
 
 #### Entitlement Operations Failing**
+
 - Verify ENT_ID exists: `SELECT * FROM ENTITLEMENTS;`
 - Check foreign key constraints
 - Review USERENTITLEMENTS table structure
@@ -1076,12 +1098,15 @@ The operation is configured as "**SQL Statement**" instead of "**Execute Stored 
 ### Debug Mode
 
 Enable debug logging in SCIM Server:
+
 1. Edit `.env` file`
 2. Add or modify:
-   ```properties
-   LOG_LEVEL_OKTA_SCIM=DEBUG
-   LOG_LEVEL_SPRING_JDBC=DEBUG
-   ```
+
+      ```properties
+      LOG_LEVEL_OKTA_SCIM=DEBUG
+      LOG_LEVEL_SPRING_JDBC=DEBUG
+      ```
+
 3. Restart SCIM container: `docker compose restart okta-scim`
 
 ---

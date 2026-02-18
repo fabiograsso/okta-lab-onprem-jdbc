@@ -13,6 +13,7 @@ Get up and running with Okta OPP Agent + SCIM Server for Generic Database in min
 ### 1. Download Required Files
 
 Download from Okta Help Center:
+
 - **OPP Agent RPM**: [Doc](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
 - **SCIM Server RPM**: [Doc](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
 
@@ -86,7 +87,8 @@ cat ./data/okta-scim/certs/OktaOnPremScimServer-*.crt
 ```
 
 **Example output**:
-```
+
+```properties
 scim.security.bearer.token=da655feabd8ec0c3f89c1fb6e9f0ad39
 ```
 
@@ -120,6 +122,7 @@ scim.security.bearer.token=da655feabd8ec0c3f89c1fb6e9f0ad39
 ### 8. Database Schema
 
 The database schema includes:
+
 - **USERS** table: USER_ID (PK), USERNAME (UNIQUE VARCHAR(100)), FIRSTNAME (VARCHAR(100) nullable), LASTNAME (VARCHAR(100) nullable), EMAIL, MANAGER, TITLE, IS_ACTIVE
 - **ENTITLEMENTS** table: ENT_ID (INT PK, values 1-10), ENT_NAME (UNIQUE), ENT_DESCRIPTION
 - **USERENTITLEMENTS** junction table: Links users to entitlements with assignment dates
