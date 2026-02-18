@@ -59,6 +59,4 @@ done
 
 # Start the OPP Agent 
 echo "🚀 Starting the OPP Agent"
-exec /opt/OktaProvisioningAgent/OktaProvisioningAgent 2>&1 &
-
-tail -f /opt/OktaProvisioningAgent/logs/*.log
+exec /opt/OktaProvisioningAgent/OktaProvisioningAgent 2>&1

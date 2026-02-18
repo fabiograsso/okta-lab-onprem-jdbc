@@ -1,11 +1,12 @@
-FROM --platform=linux/amd64 quay.io/centos/centos:stream9-minimal
+FROM quay.io/centos/centos:stream9-minimal
 
-LABEL maintainer="Fabio Gasso <fabio.grasso@okta.com>"
-LABEL org.opencontainers.image.authors="Fabio Gasso <fabio.grasso@okta.com>"
+LABEL maintainer="Fabio Gasso <iam@fabiograsso.net>"
+LABEL org.opencontainers.image.authors="Fabio Gasso <iam@fabiograsso.net>"
+LABEL org.opencontainers.image.title="Okta On-Prem Provisioning Agent"
 LABEL org.opencontainers.image.version="1.0.0"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.source="https://github.com/fabiograsso/okta-lab-radius"
-LABEL org.opencontainers.image.description=" "
+LABEL org.opencontainers.image.source="https://github.com/fabiograsso/okta-lab-onprem-jdbc"
+LABEL org.opencontainers.image.description="Docker image for Okta On-Prem Provisioning Agent (OPP), designed for secure integration with Okta Identity Cloud."
 
 ARG OKTA_EULA_ACCEPT=true
 

@@ -64,25 +64,31 @@ configure:
 	@docker compose exec okta-opp /opt/OktaProvisioningAgent/configure_agent.sh
 
 check-prereqs:
+	@echo ""
 	@echo "--> Checking prerequisites..."
-	@# For rebuild, we check for RPMs and JDBC drivers (certificates are optional)
 	@if ! ls ./docker/okta-opp/packages/OktaProvisioningAgent-*.rpm 1>/dev/null 2>&1; then \
-		echo "\033[0;31mERROR: Okta Provisioning Agent RPM not found!\033[0m"; \
-		echo "Please place the OktaProvisioningAgent-*.rpm file in the './packages/' directory."; \
+		echo "\033[0;31m  [x] ERROR: Okta Provisioning Agent RPM not found!\033[0m"; \
+		echo "Please place the OktaProvisioningAgent-*.rpm file in the './docker/okta-opp/packages/' directory."; \
 		exit 1; \
+	else \
+		echo "\033[0;32m  [✔] Okta Provisioning Agent RPM found\033[0m"; \
 	fi
 	@if ! ls ./docker/okta-scim/packages/OktaOnPremScimServer-*.rpm 1>/dev/null 2>&1; then \
-		echo "\033[0;31mERROR: Okta SCIM Server RPM not found!\033[0m"; \
-		echo "Please place the OktaOnPremScimServer-*.rpm file in the './packages/' directory."; \
+		echo "\033[0;31m  [x] ERROR: Okta SCIM Server RPM not found!\033[0m"; \
+		echo "Please place the OktaOnPremScimServer-*.rpm file in the './docker/okta-scim/packages/' directory."; \
 		exit 1; \
+	else \
+		echo "\033[0;32m  [✔] Okta SCIM Server RPM found\033[0m"; \
 	fi
 	@if ! ls ./docker/okta-scim/packages/*.jar 1>/dev/null 2>&1; then \
-		echo "\033[0;31mERROR: JDBC driver JAR files not found!\033[0m"; \
-		echo "Please place JDBC driver .jar files in the './packages/' directory."; \
-		exit 1; \
+		echo "\033[0;33m  [i] INFO: JDBC driver JAR files not found!\033[0m The MySQL JDBC driver will be downloaded automatically during build."; \
+	else \
+		echo "\033[0;32m  [✔] JDBC driver JAR files found\033[0m"; \
 	fi
-	@if ! ls ./docker/okta-scim/packages/*.pem 1>/dev/null 2>&1; then \
-		echo "\033[0;33mWARNING: No certificate file (.pem) found.\033[0m"; \
-		echo "The container will work without custom certificates but may not work with custom VPN."; \
+	@if [ -z "$$(find ./docker/okta-opp/packages ./docker/okta-scim/packages -type f \( -name '*.pem' -o -name '*.crt' \) 2>/dev/null)" ]; then \
+		echo "\033[0;33m  [i] INFO: No certificate files (.pem/.crt) found!\033[0m The containers may not work with custom VPN."; \
+	else \
+		echo "\033[0;32m  [✔] Certificate files found\033[0m"; \
 	fi
-	@echo "  [✔] Build prerequisites check passed."
+	@echo "\033[0;32m[✔] All prerequisites check passed\033[0m"
+	@echo ""

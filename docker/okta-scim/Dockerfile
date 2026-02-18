@@ -1,11 +1,12 @@
-FROM --platform=linux/amd64 quay.io/centos/centos:stream9-minimal
+FROM quay.io/centos/centos:stream9-minimal
 
-LABEL maintainer="Fabio Gasso <fabio.grasso@okta.com>"
-LABEL org.opencontainers.image.authors="Fabio Gasso <fabio.grasso@okta.com>"
+LABEL maintainer="Fabio Gasso <iam@fabiograsso.net>"
+LABEL org.opencontainers.image.authors="Fabio Gasso <iam@fabiograsso.net>"
+LABEL org.opencontainers.image.title="Okta On-Prem SCIM Server"
 LABEL org.opencontainers.image.version="1.0.0"
 LABEL org.opencontainers.image.licenses="Apache-2.0"
-LABEL org.opencontainers.image.source="https://github.com/fabiograsso/okta-lab-radius"
-LABEL org.opencontainers.image.description=" "
+LABEL org.opencontainers.image.source="https://github.com/fabiograsso/okta-lab-onprem-jdbc"
+LABEL org.opencontainers.image.description="Docker image for Okta On-Prem SCIM Server, designed for secure integration with Okta Identity Cloud."
 
 ARG OKTA_EULA_ACCEPT=true
 
@@ -25,12 +26,17 @@ RUN \
             }; \
         fi; \
     done && \
-    microdnf install -y ca-certificates libXt openssl hostname procps && \
-    curl https://download.oracle.com/java/21/archive/jdk-21.0.9_linux-x64_bin.rpm -o /packages/jdk-21.0.9_linux-x64_bin.rpm && \
-    rpm -ivh /packages/jdk-21.0.9_linux-x64_bin.rpm && \
-    rm -rf /packages/jdk-*.rpm && \
+    microdnf install -y ca-certificates libXt openssl hostname procps java-21-openjdk-headless && \ 
     microdnf clean all && \
     find /var/cache/yum -type f -delete
+# java-21-openjdk-devel
+# Download MySQL Connector/J during build
+ARG MYSQL_CONNECTOR_VERSION=9.6.0
+RUN curl -L -o /packages/mysql-connector-j-${MYSQL_CONNECTOR_VERSION}.jar \
+    "https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/${MYSQL_CONNECTOR_VERSION}/mysql-connector-j-${MYSQL_CONNECTOR_VERSION}.jar" && \
+    echo "Downloaded MySQL Connector/J ${MYSQL_CONNECTOR_VERSION}" && \
+    echo "License: GPL v2 with Universal FOSS Exception" && \
+    echo "https://oss.oracle.com/licenses/universal-foss-exception/"
 
 # Install Okta SCIM Server
 RUN CUSTOMER_ID=${CUSTOMER_ID} rpm -Uvh /packages/OktaOnPremScimServer*.rpm && \
