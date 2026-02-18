@@ -235,6 +235,4 @@ echo ""
 echo "################################################################"
 echo ""
 echo "🚀 Starting the SCIM Server"
-exec /opt/OktaOnPremScimServer/bin/OktaOnPremScimServer.sh 2>&1 &
-
-tail -f /var/log/OktaOnPremScimServer/*.log
+exec /opt/OktaOnPremScimServer/bin/OktaOnPremScimServer.sh 2>&1
