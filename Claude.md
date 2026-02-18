@@ -15,7 +15,7 @@ This is a Docker-based lab environment for **Okta On-Premises Provisioning (OPP)
 The project consists of four Docker services with separated OPP Agent and SCIM Server containers:
 
 ### 1. MariaDB Database (`db`)
-- Image: `mariadb:11-alpine`
+- Image: `mariadb:11`
 - Purpose: Local database for testing JDBC connectivity
 - Port: 3306 (internal)
 - Data persistence: `./data/mysql`
@@ -274,6 +274,19 @@ Based on Oracle examples from Appendix A of the Generic Database Connector docum
     - Deletes from USERENTITLEMENTS
 
 These procedures can be referenced in the Generic Database Connector configuration in Okta for SCIM operations.
+
+### Database Views (`sql/init.sql`)
+
+The database includes 6 operational views for monitoring and reporting:
+
+- **V_USERENTITLEMENTS** - User entitlements with readable names
+- **V_INACTIVE_USERENTITLEMENTS** - Entitlements of inactive users
+- **V_ACTIVE_USERS** - Active users with entitlement counts
+- **V_INACTIVE_USERS** - Inactive users with entitlement counts
+- **V_ENTITLEMENT_USAGE** - Entitlements with user counts
+- **V_USER_HIERARCHY** - Organizational hierarchy with manager information
+
+These views are defined in `sql/init.sql` and provide convenient access to commonly queried data.
 
 **See also**:
 - [doc/Okta_Provisioning_Configuration.md](doc/Okta%20Provisioning%20Configuration.md) for detailed step-by-step configuration instructions in the Okta Admin Console.
@@ -579,7 +592,12 @@ Location: `./docker/okta-scim/entrypoint.sh`
    - Shows SCIM Base URL, Bearer Token, and other configuration details
    - Makes credentials easily visible in container logs
 
-9. **Start SCIM Server**:
+9. **Configure health check**:
+   - Docker health check validates SCIM server by calling `/ws/rest/jdbc_on_prem/scim/v2/Status` endpoint
+   - Extracts bearer token from properties file and validates "Scim Server is running" response
+   - Runs every 5 minutes with 10s start period (see [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md) for details)
+
+10. **Start SCIM Server**:
     - Executes `/opt/OktaOnPremScimServer/bin/OktaOnPremScimServer.sh` in foreground
     - Server listens on port 1443 (HTTPS)
 
@@ -763,7 +781,7 @@ To enable query logging permanently, modify the `docker-compose.yml` file to add
 ```yaml
 services:
   db:
-    image: mariadb:11-alpine
+    image: mariadb:11
     command:
       - --general-log=1
       - --general-log-file=/var/log/mysql/general.log

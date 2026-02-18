@@ -534,7 +534,7 @@ To enable query logging permanently, modify the [docker-compose.yml](docker-comp
 ```yaml
 services:
   db:
-    image: mariadb:11-alpine
+    image: mariadb:11
     command:
       - --general-log=1
       - --general-log-file=/var/log/mysql/general.log
