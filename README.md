@@ -19,6 +19,8 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 > 3. **Follow the configuration guide** in [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md) for step-by-step Okta Admin Console setup
 > 4. **Use the SCIM Server technical documentation** in [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md) for advanced reference on API endpoints and troubleshooting
 
+---
+
 ## 📋 Table of Contents
 
 - [Overview](#-overview)
@@ -30,6 +32,7 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
   - [Architecture](#architecture)
 - [Prerequisites](#-prerequisites)
 - [Compose Start](#-compose-start)
+- [Configure Okta Cloud Integration](#-configure-okta-cloud-integration)
 - [Configuration](#-configuration)
   - [Environment Variables](#environment-variables)
   - [Database Initialization](#database-initialization)
@@ -43,10 +46,13 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 - [Resources](#-resources)
 - [License](#-license)
 - [Author](#-author)
+- [Disclaimer](#-disclaimer)
 - Other documentation files:
   - [Fast Start Guide](QUICKSTART.md) - Fast setup in minutes 
   - [Okta Provisioning Configuration Guide](doc/Okta_Provisioning_Configuration.md)
   - [Okta On-Prem SCIM Server - Technical Documentation](doc/Okta_SCIM_Server.md)
+
+---
 
 ## 🎯 Overview
 
@@ -120,6 +126,8 @@ flowchart TB
     style subGraph1 fill:#BBDEFB,stroke:#2962FF
 ```
 
+---
+
 ## 📦 Prerequisites
 
 Before starting, ensure you have:
@@ -148,6 +156,8 @@ The project now uses separate directories for OPP Agent and SCIM Server packages
 | `*.pem` or `*.crt` (certificates) | No | Custom VPN certificates | Copy your VPN provider root CA |
 
 > ℹ️ **Info**: Certificate files are only needed if you're connecting through a VPN with custom CA certificates (e.g., Palo Alto GlobalProtect, Prisma Access). If you don't have custom VPN certificates, you can ignore the warnings during startup.
+
+---
 
 ## 🚀 Compose Start
 
@@ -237,11 +247,47 @@ docker compose exec okta-scim /opt/OktaOnPremScimServer/bin/Get-OktaOnPremScimSe
 docker compose exec okta-scim bash -c 'cat /opt/OktaOnPremScimServer/certs/OktaOnPremScimServer-*.crt'
 ```
 
-### 6. Configure Okta App Integration
+---
 
-**Detailed Configuration Guide**: See **[doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)** for step-by-step instructions on configuring import and provisioning operations, among with entitlements management.
+## 🔗 Configure Okta Cloud Integration
 
-**Official Documentation**: https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm
+After completing the local setup, you'll need to configure the Okta Admin Console to connect to your on-premises environment.
+
+### What You'll Configure
+
+The Okta Generic Database Connector requires configuration in several areas:
+
+1. **Application Integration Setup**
+    - Create a Generic Database Connector app in Okta
+    - Configure SCIM Base URL and authentication
+    - Upload the SCIM server's public certificate
+
+2. **Attribute Mapping**
+    - Map all the user profile fields between Okta and your database
+    - Set up transformation rules if needed
+
+3. **LCM (LifeCycle Management) Operations**
+    - Configure *SQL queries* or *stored procedures* for user lifecycle management (import, create, update, deactivate)
+    - **To Okta (Import)**:
+      - Configure how Okta imports user data from the database
+      - Set up entitlement import from database groups/roles
+    - **To App (Push)**
+      - Configure how Okta pushes user changes to the database (provisioning)
+      - Configure entitlement assignments (add/remove user entitlements)
+
+### Configuration Resources
+
+**📘 Detailed Configuration Guide**: See **[doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)** for comprehensive step-by-step instructions with:
+
+- Screenshots and visual guides for each configuration step
+- Complete stored procedure parameter mappings
+- Import and provisioning operation configuration examples
+- Entitlement management setup
+- Testing procedures and troubleshooting tips
+
+Since the configuration involves multiple steps in the Okta Admin Console, I prefer to keep the detailed instructions in a [separate document](doc/Okta_Provisioning_Configuration.md) to maintain clarity and focus in this main README.
+
+---
 
 ## ⚙️ Configuration
 
@@ -350,6 +396,7 @@ SCIM Server configuration is automatically generated and stored in `./data/okta-
 
 > 📖 **Advanced**: For detailed technical information about the SCIM Server's internal architecture, API endpoints, and direct API testing, see [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md).
 
+---
 
 ## 🗄️ Database Management
 
@@ -393,6 +440,8 @@ CALL GET_ACTIVEUSERS();
 # Get user's entitlements
 CALL GET_USER_ENTITLEMENT('luke.skywalker@galaxy.local');
 ```
+
+---
 
 ## 🛠️ Makefile Commands
 
@@ -441,6 +490,8 @@ make rebuild
 make start
 make configure
 ```
+
+---
 
 ## 🔧 Troubleshooting
 
@@ -644,6 +695,8 @@ make restart
 - **Backup Strategy**: Implement regular database backups
 - **High Availability**: Consider redundancy and health checks for critical components
 
+---
+
 ## 🚀 Using Different Databases
 
 To use PostgreSQL instead of MariaDB:
@@ -667,6 +720,8 @@ For other databases (Oracle, SQL Server, etc.):
 4. Configure SCIM Server with database-specific connection string
 
 **Note**: MySQL Connector/J 9.6.0 is automatically downloaded from Maven Central during build. All `.jar` files in `./docker/okta-scim/packages/` are copied to `/opt/OktaOnPremScimServer/userlib/` during container build.
+
+---
 
 ## 📚 Resources
 
@@ -692,6 +747,8 @@ For other databases (Oracle, SQL Server, etc.):
 - [Okta Developer Forums](https://devforum.okta.com/)
 - [Okta Community](https://support.okta.com/community/)
 
+---
+
 ## 📝 License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
@@ -704,7 +761,7 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ---
 
-### Disclaimer
+## 🛑 Disclaimer
 
 This is a demonstration laboratory environment designed for testing and demonstration purposes. It is not officially supported by Okta for production use. Always consult [official Okta documentation](https://help.okta.com/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm) and support for production deployments.
 
