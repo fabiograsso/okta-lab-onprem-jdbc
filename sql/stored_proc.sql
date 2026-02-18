@@ -17,7 +17,6 @@ BEGIN
         FIRSTNAME,
         LASTNAME,
         MIDDLENAME,
-        HONORIFICPREFIX,
         EMAIL,
         DISPLAYNAME,
         NICKNAME,
@@ -27,21 +26,17 @@ BEGIN
         STATE,
         ZIPCODE,
         COUNTRYCODE,
-        POSTALADDRESS,
         TIMEZONE,
+        ORGANIZATION,
         DEPARTMENT,
         MANAGERID,
-        WORKLOCATION,
-        EMERGENCYCONTACT,
-        PASSWORD_HASH,
-        IS_ACTIVE,
-        COSTCENTER,
         MANAGER,
         TITLE,
+        EMPLOYEENUMBER,
         HIREDATE,
         TERMINATIONDATE,
-        BIRTHDATE,
-        EMPLOYEENUMBER
+        PASSWORD_HASH,
+        IS_ACTIVE
     FROM USERS
     WHERE IS_ACTIVE = 1;
 END$$
@@ -73,7 +68,6 @@ BEGIN
         FIRSTNAME,
         LASTNAME,
         MIDDLENAME,
-        HONORIFICPREFIX,
         EMAIL,
         DISPLAYNAME,
         NICKNAME,
@@ -83,21 +77,17 @@ BEGIN
         STATE,
         ZIPCODE,
         COUNTRYCODE,
-        POSTALADDRESS,
         TIMEZONE,
+        ORGANIZATION,
         DEPARTMENT,
         MANAGERID,
-        WORKLOCATION,
-        EMERGENCYCONTACT,
-        PASSWORD_HASH,
-        IS_ACTIVE,
-        COSTCENTER,
         MANAGER,
         TITLE,
+        EMPLOYEENUMBER,
         HIREDATE,
         TERMINATIONDATE,
-        BIRTHDATE,
-        EMPLOYEENUMBER
+        PASSWORD_HASH,
+        IS_ACTIVE
     FROM USERS
     WHERE USER_ID = p_user_id;
 END$$
@@ -138,7 +128,6 @@ CREATE PROCEDURE CREATE_USER(
     IN p_lastname VARCHAR(100),
     IN p_email VARCHAR(100),
     IN p_middlename VARCHAR(100),
-    IN p_honorificprefix VARCHAR(50),
     IN p_displayname VARCHAR(200),
     IN p_nickname VARCHAR(100),
     IN p_mobilephone VARCHAR(50),
@@ -147,20 +136,16 @@ CREATE PROCEDURE CREATE_USER(
     IN p_state VARCHAR(100),
     IN p_zipcode VARCHAR(20),
     IN p_countrycode VARCHAR(10),
-    IN p_postaladdress VARCHAR(500),
     IN p_timezone VARCHAR(100),
+    IN p_organization VARCHAR(100),
     IN p_department VARCHAR(100),
     IN p_managerid VARCHAR(100),
-    IN p_worklocation VARCHAR(200),
-    IN p_emergencycontact VARCHAR(200),
-    IN p_password_hash VARCHAR(255),
-    IN p_costcenter VARCHAR(100),
     IN p_manager VARCHAR(100),
     IN p_title VARCHAR(100),
+    IN p_employeenumber VARCHAR(50),
     IN p_hiredate DATE,
     IN p_terminationdate DATE,
-    IN p_birthdate DATE,
-    IN p_employeenumber VARCHAR(50)
+    IN p_password_hash VARCHAR(255)
 )
 BEGIN
     INSERT INTO USERS (
@@ -169,7 +154,6 @@ BEGIN
         FIRSTNAME,
         LASTNAME,
         MIDDLENAME,
-        HONORIFICPREFIX,
         EMAIL,
         DISPLAYNAME,
         NICKNAME,
@@ -179,28 +163,23 @@ BEGIN
         STATE,
         ZIPCODE,
         COUNTRYCODE,
-        POSTALADDRESS,
         TIMEZONE,
+        ORGANIZATION,
         DEPARTMENT,
         MANAGERID,
-        WORKLOCATION,
-        EMERGENCYCONTACT,
-        PASSWORD_HASH,
-        IS_ACTIVE,
-        COSTCENTER,
         MANAGER,
         TITLE,
+        EMPLOYEENUMBER,
         HIREDATE,
         TERMINATIONDATE,
-        BIRTHDATE,
-        EMPLOYEENUMBER
+        PASSWORD_HASH,
+        IS_ACTIVE
     ) VALUES (
         p_user_id,
         p_username,
         p_firstname,
         p_lastname,
         p_middlename,
-        p_honorificprefix,
         p_email,
         p_displayname,
         p_nickname,
@@ -210,21 +189,17 @@ BEGIN
         p_state,
         p_zipcode,
         p_countrycode,
-        p_postaladdress,
         p_timezone,
+        p_organization,
         p_department,
         p_managerid,
-        p_worklocation,
-        p_emergencycontact,
-        p_password_hash,
-        1,
-        p_costcenter,
         p_manager,
         p_title,
+        p_employeenumber,
         p_hiredate,
         p_terminationdate,
-        p_birthdate,
-        p_employeenumber
+        p_password_hash,
+        1
     );
 END$$
 
@@ -241,7 +216,6 @@ CREATE PROCEDURE UPDATE_USER(
     IN p_lastname VARCHAR(100),
     IN p_email VARCHAR(100),
     IN p_middlename VARCHAR(100),
-    IN p_honorificprefix VARCHAR(50),
     IN p_displayname VARCHAR(200),
     IN p_nickname VARCHAR(100),
     IN p_mobilephone VARCHAR(50),
@@ -250,20 +224,16 @@ CREATE PROCEDURE UPDATE_USER(
     IN p_state VARCHAR(100),
     IN p_zipcode VARCHAR(20),
     IN p_countrycode VARCHAR(10),
-    IN p_postaladdress VARCHAR(500),
     IN p_timezone VARCHAR(100),
+    IN p_organization VARCHAR(100),
     IN p_department VARCHAR(100),
     IN p_managerid VARCHAR(100),
-    IN p_worklocation VARCHAR(200),
-    IN p_emergencycontact VARCHAR(200),
-    IN p_password_hash VARCHAR(255),
-    IN p_costcenter VARCHAR(100),
     IN p_manager VARCHAR(100),
     IN p_title VARCHAR(100),
+    IN p_employeenumber VARCHAR(50),
     IN p_hiredate DATE,
     IN p_terminationdate DATE,
-    IN p_birthdate DATE,
-    IN p_employeenumber VARCHAR(50)
+    IN p_password_hash VARCHAR(255)
 )
 BEGIN
     UPDATE USERS SET
@@ -271,7 +241,6 @@ BEGIN
         FIRSTNAME = p_firstname,
         LASTNAME = p_lastname,
         MIDDLENAME = p_middlename,
-        HONORIFICPREFIX = p_honorificprefix,
         EMAIL = p_email,
         DISPLAYNAME = p_displayname,
         NICKNAME = p_nickname,
@@ -281,20 +250,16 @@ BEGIN
         STATE = p_state,
         ZIPCODE = p_zipcode,
         COUNTRYCODE = p_countrycode,
-        POSTALADDRESS = p_postaladdress,
         TIMEZONE = p_timezone,
+        ORGANIZATION = p_organization,
         DEPARTMENT = p_department,
         MANAGERID = p_managerid,
-        WORKLOCATION = p_worklocation,
-        EMERGENCYCONTACT = p_emergencycontact,
-        PASSWORD_HASH = p_password_hash,
-        COSTCENTER = p_costcenter,
         MANAGER = p_manager,
         TITLE = p_title,
+        EMPLOYEENUMBER = p_employeenumber,
         HIREDATE = p_hiredate,
         TERMINATIONDATE = p_terminationdate,
-        BIRTHDATE = p_birthdate,
-        EMPLOYEENUMBER = p_employeenumber
+        PASSWORD_HASH = p_password_hash
     WHERE USER_ID = p_user_id;
 END$$
 

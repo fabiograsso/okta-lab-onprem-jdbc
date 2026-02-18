@@ -37,7 +37,7 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 - Hostname: `okta-opp`
 - Components:
   - Okta Provisioning Agent
-  - Oracle JDK 21 (bundled with agent RPM as fallback)
+  - Oracle JDK (bundled with agent RPM as fallback)
 - Volumes:
   - `./data/okta-opp/conf` → `/opt/OktaProvisioningAgent/conf/`
   - `./data/okta-opp/logs` → `/opt/OktaProvisioningAgent/logs/`
@@ -52,8 +52,7 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 - Hostname: `okta-scim`
 - Components:
   - Okta On-Prem SCIM Server
-  - OpenJDK 21 Headless (system package: java-21-openjdk-headless)
-  - Oracle JDK 21 (bundled with SCIM server RPM as fallback)
+  - OpenJDK 25 Headless (system package: java-25-openjdk-headless)
   - MySQL Connector/J (auto-downloaded during build from Maven Central)
   - Custom JDBC drivers (optional, placed in userlib)
 - Volumes:
@@ -153,9 +152,9 @@ The MariaDB container automatically executes SQL scripts from `./sql/` directory
 
 Creates three core tables:
 
-**USERS Table** (30 fields):
+**USERS Table** (25 fields):
 - **Required** (5): USER_ID (PK), USERNAME, FIRSTNAME, LASTNAME, EMAIL
-- **Optional** (25): Identity (MIDDLENAME, HONORIFICPREFIX, DISPLAYNAME, NICKNAME, BIRTHDATE), Contact (MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, EMERGENCYCONTACT), Work (TITLE, DEPARTMENT, EMPLOYEENUMBER, MANAGER, MANAGERID, WORKLOCATION, COSTCENTER), Dates (HIREDATE, TERMINATIONDATE), Security (PASSWORD_HASH, IS_ACTIVE)
+- **Optional** (20): Identity (MIDDLENAME, DISPLAYNAME, NICKNAME), Contact (MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, TIMEZONE), Work (TITLE, ORGANIZATION, DEPARTMENT, EMPLOYEENUMBER, MANAGER, MANAGERID), Dates (HIREDATE, TERMINATIONDATE), Security (PASSWORD_HASH, IS_ACTIVE)
 
 **ENTITLEMENTS Table**:
 - `ENT_ID` INT PRIMARY KEY - Entitlement identifier (manually specified values 1-10)
@@ -170,8 +169,9 @@ Creates three core tables:
 - Unique constraint on (USER_ID, ENT_ID)
 
 **Test Data**:
-- **15 Star Wars characters** as test users from `2.users.ldif` (Luke Skywalker, Leia Organa, Han Solo, Obi-Wan Kenobi, Yoda, etc.)
-  - Populated with extended profile data: displayName, department, postalAddress, employeeNumber, password hash, costCenter
+- **15 Star Wars characters** as test users (Luke Skywalker, Leia Organa, Han Solo, Obi-Wan Kenobi, Yoda, etc.)
+  - Populated with extended profile data: displayName, organization, department, employeeNumber, password hash, manager hierarchy
+  - Organizations: Jedi (Light Side Jedi), Resistance (Light Side non-Jedi), Empire (Dark Side), Droid (Droids)
   - Light Side: Jedi Council members and Resistance leaders
   - Dark Side: Imperial High Command
   - Droids: Protocol and Astromech units
@@ -187,30 +187,30 @@ Creates three core tables:
 Based on Oracle examples from Appendix A of the Generic Database Connector documentation, adapted for MySQL/MariaDB:
 
 1. **GET_ACTIVEUSERS()** - Returns all active users
-   - Output: All 30 user fields (USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER)
+   - Output: All 25 user fields (USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, TIMEZONE, ORGANIZATION, DEPARTMENT, MANAGERID, MANAGER, TITLE, EMPLOYEENUMBER, HIREDATE, TERMINATIONDATE, PASSWORD_HASH, IS_ACTIVE)
 
 2. **GET_ALL_ENTITLEMENTS()** - Returns all available entitlements
    - Output: ENT_ID, ENT_NAME, ENT_DESCRIPTION
 
 3. **GET_USER_BY_ID(p_user_id)** - Returns specific user details
    - Input: p_user_id VARCHAR(100)
-   - Output: All 30 user fields (same as GET_ACTIVEUSERS)
+   - Output: All 25 user fields (same as GET_ACTIVEUSERS)
 
 4. **GET_USER_ENTITLEMENT(p_user_id)** - Returns user's entitlements with details
    - Input: p_user_id VARCHAR(100)
    - Output: USERENTITLEMENT_ID, USER_ID, USERNAME, EMAIL, ENT_ID, ENT_NAME, ENT_DESCRIPTION, ASSIGNEDDATE
 
 5. **CREATE_USER(...)** - Creates a new user account
-   - **29 Parameters** (5 mandatory + 24 optional):
+   - **24 Parameters** (5 mandatory + 19 optional):
      - **Mandatory**: p_user_id, p_username, p_firstname, p_lastname, p_email
-     - **Optional**: p_middlename, p_honorificprefix, p_displayname, p_nickname, p_mobilephone, p_streetaddress, p_city, p_state, p_zipcode, p_countrycode, p_postaladdress, p_timezone, p_department, p_managerid, p_worklocation, p_emergencycontact, p_password_hash, p_costcenter, p_manager, p_title, p_hiredate, p_terminationdate, p_birthdate, p_employeenumber
+     - **Optional**: p_middlename, p_displayname, p_nickname, p_mobilephone, p_streetaddress, p_city, p_state, p_zipcode, p_countrycode, p_timezone, p_organization, p_department, p_managerid, p_manager, p_title, p_employeenumber, p_hiredate, p_terminationdate, p_password_hash
    - Sets IS_ACTIVE = 1 by default
    - All optional parameters can be NULL
 
 6. **UPDATE_USER(...)** - Updates existing user attributes
-   - **29 Parameters** (5 mandatory + 24 optional):
+   - **24 Parameters** (5 mandatory + 19 optional):
      - **Mandatory**: p_user_id, p_username, p_firstname, p_lastname, p_email
-     - **Optional**: Same 24 optional parameters as CREATE_USER
+     - **Optional**: Same 19 optional parameters as CREATE_USER
    - Updates all fields based on USER_ID
    - All optional parameters can be NULL
 
@@ -916,8 +916,8 @@ Note: The SQL scripts only run on first database initialization. For existing da
 - MariaDB: 11 Alpine
 - DBGate: Latest
 - CentOS: Stream 9 Minimal
-- OpenJDK: 21 Headless (system package)
-- Oracle JDK: 21 (bundled with OPP Agent and SCIM Server RPMs)
+- OpenJDK: 25 Headless (system package)
+- Oracle JDK:  (bundled with OPP Agent RPM)
 - MySQL Connector/J: 9.6.0 (auto-downloaded from Maven Central)
 - OPP Agent: Version from RPM (varies)
 - SCIM Server: Version from RPM (varies)
@@ -953,7 +953,7 @@ This works because the OPP Agent and SCIM Server are on the same Docker network 
 
 The MariaDB container uses Docker's initialization feature (`/docker-entrypoint-initdb.d/`). All `.sql` files in the `./sql/` directory are automatically executed in alphabetical order on first container startup:
 
-1. **init.sql** - Creates schema with 30-field USERS table and populates test data (15 users from LDIF with extended profiles, 10 entitlements)
+1. **init.sql** - Creates schema with 30-field USERS table and populates test data (15 users with extended profiles, 10 entitlements)
 2. **stored_proc.sql** - Creates 10 stored procedures for SCIM operations (CREATE_USER and UPDATE_USER support all fields with parameters)
 
 **Important**: These scripts only run once when the database is first initialized. To reset:

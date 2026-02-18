@@ -190,7 +190,7 @@ Import all active users from the database.
 - Option 1 - Select **SQL Statement**, and enter the SQL query:
 
    ```sql
-   SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE IS_ACTIVE = 1
+   SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, TIMEZONE, ORGANIZATION, DEPARTMENT, MANAGERID, MANAGER, TITLE, EMPLOYEENUMBER, HIREDATE, TERMINATIONDATE, PASSWORD_HASH, IS_ACTIVE FROM USERS WHERE IS_ACTIVE = 1
    ```
 
 - Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
@@ -243,7 +243,7 @@ Retrieve specific user details by their USER_ID.
 - Option 1 - Select **SQL Statement**, and enter the SQL query:
 
    ```sql
-   SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE USER_ID = ?
+   SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, TIMEZONE, ORGANIZATION, DEPARTMENT, MANAGERID, MANAGER, TITLE, EMPLOYEENUMBER, HIREDATE, TERMINATIONDATE, PASSWORD_HASH, IS_ACTIVE FROM USERS WHERE USER_ID = ?
    ```
 
 - Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
@@ -311,14 +311,14 @@ Create a new user in the database when assigned in Okta.
 - Option 1 - Select **SQL Statement**, and enter the SQL query:
 
    ```sql
-   INSERT INTO USERS (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME, HONORIFICPREFIX, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER)
-   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+   INSERT INTO USERS (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, TIMEZONE, ORGANIZATION, DEPARTMENT, MANAGERID, MANAGER, TITLE, EMPLOYEENUMBER, HIREDATE, TERMINATIONDATE, PASSWORD_HASH)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
    ```
 
 - Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
 
    ```sql
-   CALL CREATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+   CALL CREATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
    ```
 
 - **Map Parameters to Fields:**
@@ -328,29 +328,24 @@ Create a new user in the database when assigned in Okta.
   - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
   - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
   - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-  - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
-  - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-  - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
-  - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-  - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-  - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
-  - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
-  - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
-  - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-  - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
-  - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
-  - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-  - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
-  - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
-  - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
-  - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
-  - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
-  - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
-  - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
-  - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
-  - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-  - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
-  - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+  - Parameter 7: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
+  - Parameter 8: `DATABASE_FIELD` → `NICKNAME` (optional)
+  - Parameter 9: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
+  - Parameter 10: `DATABASE_FIELD` → `STREETADDRESS` (optional)
+  - Parameter 11: `DATABASE_FIELD` → `CITY` (optional)
+  - Parameter 12: `DATABASE_FIELD` → `STATE` (optional)
+  - Parameter 13: `DATABASE_FIELD` → `ZIPCODE` (optional)
+  - Parameter 14: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
+  - Parameter 15: `DATABASE_FIELD` → `TIMEZONE` (optional)
+  - Parameter 16: `DATABASE_FIELD` → `ORGANIZATION` (optional)
+  - Parameter 17: `DATABASE_FIELD` → `DEPARTMENT` (optional)
+  - Parameter 18: `DATABASE_FIELD` → `MANAGERID` (optional)
+  - Parameter 19: `DATABASE_FIELD` → `MANAGER` (optional)
+  - Parameter 20: `DATABASE_FIELD` → `TITLE` (optional)
+  - Parameter 21: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+  - Parameter 22: `DATABASE_FIELD` → `HIREDATE` (optional)
+  - Parameter 23: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
+  - Parameter 24: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
 
 💡 **What it does:** Inserts a new row into the USERS table with all user attributes. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
@@ -369,14 +364,14 @@ Update existing user attributes in the database.
 
    ```sql
    UPDATE USERS
-   SET USERNAME = ?, FIRSTNAME = ?, LASTNAME = ?, EMAIL = ?, MIDDLENAME = ?, HONORIFICPREFIX = ?, DISPLAYNAME = ?, NICKNAME = ?, MOBILEPHONE = ?, STREETADDRESS = ?, CITY = ?, STATE = ?, ZIPCODE = ?, COUNTRYCODE = ?, POSTALADDRESS = ?, TIMEZONE = ?, DEPARTMENT = ?, MANAGERID = ?, WORKLOCATION = ?, EMERGENCYCONTACT = ?, PASSWORD_HASH = ?, COSTCENTER = ?, MANAGER = ?, TITLE = ?, HIREDATE = ?, TERMINATIONDATE = ?, BIRTHDATE = ?, EMPLOYEENUMBER = ?
+   SET USERNAME = ?, FIRSTNAME = ?, LASTNAME = ?, EMAIL = ?, MIDDLENAME = ?, DISPLAYNAME = ?, NICKNAME = ?, MOBILEPHONE = ?, STREETADDRESS = ?, CITY = ?, STATE = ?, ZIPCODE = ?, COUNTRYCODE = ?, TIMEZONE = ?, ORGANIZATION = ?, DEPARTMENT = ?, MANAGERID = ?, MANAGER = ?, TITLE = ?, EMPLOYEENUMBER = ?, HIREDATE = ?, TERMINATIONDATE = ?, PASSWORD_HASH = ?
    WHERE USER_ID = ?
    ```
 
 - Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
 
    ```sql
-   CALL UPDATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+   CALL UPDATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
    ```
 
 - **Map Parameters to Fields:**
@@ -386,29 +381,24 @@ Update existing user attributes in the database.
   - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
   - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
   - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-  - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
-  - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-  - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
-  - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-  - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-  - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
-  - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
-  - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
-  - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-  - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
-  - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
-  - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-  - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
-  - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
-  - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
-  - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
-  - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
-  - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
-  - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
-  - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
-  - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-  - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
-  - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+  - Parameter 7: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
+  - Parameter 8: `DATABASE_FIELD` → `NICKNAME` (optional)
+  - Parameter 9: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
+  - Parameter 10: `DATABASE_FIELD` → `STREETADDRESS` (optional)
+  - Parameter 11: `DATABASE_FIELD` → `CITY` (optional)
+  - Parameter 12: `DATABASE_FIELD` → `STATE` (optional)
+  - Parameter 13: `DATABASE_FIELD` → `ZIPCODE` (optional)
+  - Parameter 14: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
+  - Parameter 15: `DATABASE_FIELD` → `TIMEZONE` (optional)
+  - Parameter 16: `DATABASE_FIELD` → `ORGANIZATION` (optional)
+  - Parameter 17: `DATABASE_FIELD` → `DEPARTMENT` (optional)
+  - Parameter 18: `DATABASE_FIELD` → `MANAGERID` (optional)
+  - Parameter 19: `DATABASE_FIELD` → `MANAGER` (optional)
+  - Parameter 20: `DATABASE_FIELD` → `TITLE` (optional)
+  - Parameter 21: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+  - Parameter 22: `DATABASE_FIELD` → `HIREDATE` (optional)
+  - Parameter 23: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
+  - Parameter 24: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
 
 💡 **What it does:** Updates the USERS table record matching the USER_ID with new attribute values. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
@@ -957,12 +947,12 @@ This configuration uses the following database tables:
 
 | Table | Description | Fields |
 | ----- | ----------- | ------ |
-| **USERS** | Comprehensive user profiles | `USER_ID` (PK), `USERNAME` (UNIQUE), `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `HONORIFICPREFIX`, `EMAIL`, `DISPLAYNAME`, `NICKNAME`, `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `POSTALADDRESS`, `TIMEZONE`, `DEPARTMENT`, `MANAGERID`, `WORKLOCATION`, `EMERGENCYCONTACT`, `PASSWORD_HASH`, `IS_ACTIVE`, `COSTCENTER`, `MANAGER`, `TITLE`, `HIREDATE`, `TERMINATIONDATE`, `BIRTHDATE`, `EMPLOYEENUMBER` |
+| **USERS** | Comprehensive user profiles | `USER_ID` (PK), `USERNAME` (UNIQUE), `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `EMAIL`, `DISPLAYNAME`, `NICKNAME`, `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `TIMEZONE`, `ORGANIZATION`, `DEPARTMENT`, `MANAGERID`, `MANAGER`, `TITLE`, `EMPLOYEENUMBER`, `HIREDATE`, `TERMINATIONDATE`, `PASSWORD_HASH`, `IS_ACTIVE` |
 | **ENTITLEMENTS** | Available entitlements | `ENT_ID` (PK), `ENT_NAME`, `ENT_DESCRIPTION` |
 | **USERENTITLEMENTS** | User-entitlement mappings | `USERENTITLEMENT_ID` (PK), `USER_ID` (FK), `ENT_ID` (FK), `ASSIGNEDDATE` |
 
 - **Mandatory USERS fields**: `USER_ID`, `USERNAME`, `FIRSTNAME`, `LASTNAME`, `EMAIL`
-- **Optional USERS fields**: All other 25 fields can be NULL
+- **Optional USERS fields**: All other 20 fields can be NULL
 
 > 💡 The lab includes **15 test users** (Star Wars characters) with pre-configured entitlements.
 

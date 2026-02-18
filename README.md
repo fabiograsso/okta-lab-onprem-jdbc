@@ -327,7 +327,7 @@ The database is automatically initialized on first startup with:
   - `ENT_ID` (PRIMARY KEY), `ENT_NAME`, `ENT_DESCRIPTION`
 - **USERENTITLEMENTS** table: Junction table for user-entitlement mappings
   - `USERENTITLEMENT_ID` (PRIMARY KEY), `USER_ID`, `ENT_ID`, `ASSIGNED_DATE`
-- **Test Data**: 15 Star Wars-themed users from LDIF with realistic job roles, departments, and entitlement assignments
+- **Test Data**: 15 Star Wars-themed users with realistic job roles, departments, and entitlement assignments
 
 **Stored Procedures** (`sql/stored_proc.sql`):
 The following procedures are available for SCIM operations with support for all the user fields:

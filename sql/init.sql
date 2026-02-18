@@ -5,7 +5,6 @@ CREATE TABLE USERS (
     FIRSTNAME VARCHAR(100) NOT NULL,
     LASTNAME VARCHAR(100) NOT NULL,
     MIDDLENAME VARCHAR(100),
-    HONORIFICPREFIX VARCHAR(50),
     EMAIL VARCHAR(100) NOT NULL,
     DISPLAYNAME VARCHAR(200),
     NICKNAME VARCHAR(100),
@@ -15,21 +14,17 @@ CREATE TABLE USERS (
     STATE VARCHAR(100),
     ZIPCODE VARCHAR(20),
     COUNTRYCODE VARCHAR(10),
-    POSTALADDRESS VARCHAR(500),
     TIMEZONE VARCHAR(100),
+    ORGANIZATION VARCHAR(100),
     DEPARTMENT VARCHAR(100),
     MANAGERID VARCHAR(100),
-    WORKLOCATION VARCHAR(200),
-    EMERGENCYCONTACT VARCHAR(200),
-    PASSWORD_HASH VARCHAR(255),
-    IS_ACTIVE BOOLEAN DEFAULT TRUE,
-    COSTCENTER VARCHAR(100),
     MANAGER VARCHAR(100),
     TITLE VARCHAR(100),
+    EMPLOYEENUMBER VARCHAR(50),
     HIREDATE DATE,
     TERMINATIONDATE DATE,
-    BIRTHDATE DATE,
-    EMPLOYEENUMBER VARCHAR(50)
+    PASSWORD_HASH VARCHAR(255),
+    IS_ACTIVE BOOLEAN DEFAULT TRUE
 ) ENGINE=InnoDB;
 
 -- Create ENTITLEMENTS table
@@ -50,89 +45,89 @@ CREATE TABLE USERENTITLEMENTS (
     UNIQUE KEY unique_user_entitlement (USER_ID, ENT_ID)
 ) ENGINE=InnoDB;
 
--- Populate USERS with Star Wars characters from LDIF
+-- Populate USERS with Star Wars characters as test data with extended attributes
 -- Password for all users: P@ssword2024!
 INSERT INTO USERS (
-    USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, DISPLAYNAME, TITLE, DEPARTMENT,
-    MANAGER, MANAGERID, POSTALADDRESS, EMPLOYEENUMBER, PASSWORD_HASH, COSTCENTER, IS_ACTIVE
+    USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, DISPLAYNAME, TITLE, ORGANIZATION, DEPARTMENT,
+    MANAGERID, MANAGER, EMPLOYEENUMBER, PASSWORD_HASH, IS_ACTIVE
 ) VALUES
 -- LIGHT SIDE
 ('LUKE.SKYWALKER', 'luke.skywalker@galaxy.local', 'Luke', 'Skywalker', 'luke.skywalker@galaxy.local',
- 'Luke Skywalker', 'Jedi Knight', 'JEDI-COUNCIL',
- 'Obiwan Kenobi', 'obiwan.kenobi@galaxy.local', 'Lars Moisture Farm, Anchorhead, Tatooine', '10021',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Jedi', 1),
+ 'Luke Skywalker', 'Jedi Knight', 'Jedi', 'JEDI-COUNCIL',
+ 'obiwan.kenobi@galaxy.local', 'Obiwan Kenobi', '10021',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('LEIA.ORGANA', 'leia.organa@galaxy.local', 'Leia', 'Organa', 'leia.organa@galaxy.local',
- 'Princess Leia', 'Princess of Alderaan', 'REBEL-COMMAND',
- NULL, NULL, 'Royal Palace, Aldera, Alderaan', '10022',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Resistance', 1),
+ 'Princess Leia', 'Princess of Alderaan', 'Resistance', 'REBEL-COMMAND',
+ NULL, NULL, '10022',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('HAN.SOLO', 'han.solo@galaxy.local', 'Han', 'Solo', 'han.solo@galaxy.local',
- 'Han Solo', 'Smuggler Captain', 'FREELANCE',
- 'Leia Organa', 'leia.organa@galaxy.local', 'Docking Bay 94, Mos Eisley, Tatooine', '10023',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Resistance', 1),
+ 'Han Solo', 'Smuggler Captain', 'Resistance', 'FREELANCE',
+ 'leia.organa@galaxy.local', 'Leia Organa', '10023',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('OBIWAN.KENOBI', 'obiwan.kenobi@galaxy.local', 'Obi-Wan', 'Kenobi', 'obiwan.kenobi@galaxy.local',
- 'Obi-Wan Kenobi', 'Jedi Master', 'JEDI-COUNCIL',
- 'Yoda', 'yoda@galaxy.local', 'Dune Sea Hut, Jundland Wastes, Tatooine', '10024',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Jedi', 1),
+ 'Obi-Wan Kenobi', 'Jedi Master', 'Jedi', 'JEDI-COUNCIL',
+ 'yoda@galaxy.local', 'Yoda', '10024',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('YODA', 'yoda@galaxy.local', 'Minch', 'Yoda', 'yoda@galaxy.local',
- 'Yoda', 'Grand Jedi Master', 'JEDI-COUNCIL',
- NULL, NULL, 'Hut, Swamp, Dagobah', '900',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Jedi', 1),
+ 'Yoda', 'Grand Jedi Master', 'Jedi', 'JEDI-COUNCIL',
+ NULL, NULL, '900',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('CHEWBACCA', 'chewbacca@galaxy.local', 'Chewbacca', 'Wookiee', 'chewbacca@galaxy.local',
- 'Chewbacca', 'First Mate & Wookiee Warrior', 'FREELANCE',
- 'Han Solo', 'han.solo@galaxy.local', 'Millennium Falcon Co-pilot Seat, Kashyyyk', '10025',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Resistance', 1),
+ 'Chewbacca', 'First Mate & Wookiee Warrior', 'Resistance', 'FREELANCE',
+ 'han.solo@galaxy.local', 'Han Solo', '10025',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('PADME.AMIDALA', 'padme.amidala@galaxy.local', 'Padmé', 'Amidala', 'padme.amidala@galaxy.local',
- 'Padmé', 'Queen of Naboo', 'ROYAL-HOUSE',
- NULL, NULL, 'Theed Royal Palace, Theed, Naboo', '10026',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Resistance', 1),
+ 'Padmé', 'Queen of Naboo', 'Resistance', 'ROYAL-HOUSE',
+ NULL, NULL, '10026',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('LANDO.CALRISSIAN', 'lando.calrissian@galaxy.local', 'Lando', 'Calrissian', 'lando.calrissian@galaxy.local',
- 'Lando Calrissian', 'Baron Administrator', 'REBEL-COMMAND',
- NULL, NULL, 'Cloud City, Bespin', '10027',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Resistance', 1),
+ 'Lando Calrissian', 'Baron Administrator', 'Resistance', 'REBEL-COMMAND',
+ NULL, NULL, '10027',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('QUI-GON.JINN', 'qui-gon.jinn@galaxy.local', 'Qui-Gon', 'Jinn', 'qui-gon.jinn@galaxy.local',
- 'Qui-Gon Jinn', 'Jedi Master', 'JEDI-COUNCIL',
- NULL, NULL, 'Jedi Temple, Coruscant', '10028',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Jedi', 1),
+ 'Qui-Gon Jinn', 'Jedi Master', 'Jedi', 'JEDI-COUNCIL',
+ NULL, NULL, '10028',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('MACE.WINDU', 'mace.windu@galaxy.local', 'Mace', 'Windu', 'mace.windu@galaxy.local',
- 'Mace Windu', 'Jedi Master', 'JEDI-COUNCIL',
- 'Yoda', 'yoda@galaxy.local', 'Jedi Temple, Coruscant', '10029',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Jedi', 1),
+ 'Mace Windu', 'Jedi Master', 'Jedi', 'JEDI-COUNCIL',
+ 'yoda@galaxy.local', 'Yoda', '10029',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 -- DARK SIDE
 ('DARTH.VADER', 'darth.vader@galaxy.local', 'Anakin', 'Skywalker', 'darth.vader@galaxy.local',
- 'Darth Vader', 'Dark Lord of the Sith', 'IMPERIAL-HIGH-COMMAND',
- 'Darth Sidious', 'darth.sidious@galaxy.local', 'Executor Bridge, Death Star, Galactic Empire', '501',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Empire', 1),
+ 'Darth Vader', 'Dark Lord of the Sith', 'Empire', 'IMPERIAL-HIGH-COMMAND',
+ 'darth.sidious@galaxy.local', 'Darth Sidious', '501',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('DARTH.SIDIOUS', 'darth.sidious@galaxy.local', 'Sheev', 'Palpatine', 'darth.sidious@galaxy.local',
- 'Darth Sidious', 'Galactic Emperor', 'IMPERIAL-HIGH-COMMAND',
- NULL, NULL, 'The Throne Room, Death Star II, Galactic Empire', '1',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Empire', 1),
+ 'Darth Sidious', 'Galactic Emperor', 'Empire', 'IMPERIAL-HIGH-COMMAND',
+ NULL, NULL, '1',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('WILHUFF.TARKIN', 'wilhuff.tarkin@galaxy.local', 'Wilhuff', 'Tarkin', 'wilhuff.tarkin@galaxy.local',
- 'Grand Moff Tarkin', 'Grand Moff', 'IMPERIAL-HIGH-COMMAND',
- 'Darth Sidious', 'darth.sidious@galaxy.local', 'Death Star Command, Galactic Empire', '101',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Empire', 1),
+ 'Grand Moff Tarkin', 'Grand Moff', 'Empire', 'IMPERIAL-HIGH-COMMAND',
+ 'darth.sidious@galaxy.local', 'Darth Sidious', '101',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 -- DROIDS
 ('C3-PO', 'c3-po@galaxy.local', 'C3', 'PO', 'c3-po@galaxy.local',
- 'C3-PO', 'Protocol Droid', 'DROID-MAINT',
- 'Leia Organa', 'leia.organa@galaxy.local', 'Tantive IV, Consular Ship, Alderaan', '10003',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Droid', 1),
+ 'C3-PO', 'Protocol Droid', 'Droid', 'DROID-MAINT',
+ 'leia.organa@galaxy.local', 'Leia Organa', '10003',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1),
 
 ('R2-D2', 'r2-d2@galaxy.local', 'R2', 'D2', 'r2-d2@galaxy.local',
- 'R2-D2', 'Astromech Droid', 'DROID-MAINT',
- 'Luke Skywalker', 'luke.skywalker@galaxy.local', 'X-Wing Fighter, Red 5, Rebel Alliance', '10002',
- '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 'Droid', 1);
+ 'R2-D2', 'Astromech Droid', 'Droid', 'DROID-MAINT',
+ 'luke.skywalker@galaxy.local', 'Luke Skywalker', '10002',
+ '{SSHA}e1NTSEF9aVFFSEV5azhGZzNhd0NHalUwbVRBWDJlcDJwUmYrLzY=', 1);
 
 -- Populate ENTITLEMENTS
 INSERT INTO ENTITLEMENTS (ENT_ID, ENT_NAME, ENT_DESCRIPTION) VALUES
@@ -305,14 +300,13 @@ SELECT
     U.EMAIL,
     U.DISPLAYNAME,
     U.TITLE,
+    U.ORGANIZATION,
     U.DEPARTMENT,
     U.EMPLOYEENUMBER,
     CONCAT(M.FIRSTNAME, ' ', M.LASTNAME) AS MANAGER_NAME,
     U.MANAGER AS MANAGER_EMAIL,
     U.MANAGERID,
     U.MOBILEPHONE,
-    U.POSTALADDRESS,
-    U.COSTCENTER,
     U.HIREDATE,
     COUNT(UE.ENT_ID) AS ENTITLEMENT_COUNT,
     U.IS_ACTIVE
@@ -320,7 +314,7 @@ FROM USERS U
 LEFT JOIN USERS M ON U.MANAGER = M.USER_ID
 LEFT JOIN USERENTITLEMENTS UE ON U.USER_ID = UE.USER_ID
 WHERE U.IS_ACTIVE = 1
-GROUP BY U.USER_ID, U.USERNAME, U.FIRSTNAME, U.LASTNAME, U.MIDDLENAME, U.EMAIL, U.DISPLAYNAME, U.TITLE, U.DEPARTMENT, U.EMPLOYEENUMBER, U.MANAGER, U.MANAGERID, U.MOBILEPHONE, U.POSTALADDRESS, U.COSTCENTER, U.HIREDATE, M.FIRSTNAME, M.LASTNAME, U.IS_ACTIVE;
+GROUP BY U.USER_ID, U.USERNAME, U.FIRSTNAME, U.LASTNAME, U.MIDDLENAME, U.EMAIL, U.DISPLAYNAME, U.TITLE, U.ORGANIZATION, U.DEPARTMENT, U.EMPLOYEENUMBER, U.MANAGER, U.MANAGERID, U.MOBILEPHONE, U.HIREDATE, M.FIRSTNAME, M.LASTNAME, U.IS_ACTIVE;
 
 -- View that shows inactive users with their details and entitlement count
 CREATE OR REPLACE VIEW V_INACTIVE_USERS AS
@@ -334,14 +328,13 @@ SELECT
     U.EMAIL,
     U.DISPLAYNAME,
     U.TITLE,
+    U.ORGANIZATION,
     U.DEPARTMENT,
     U.EMPLOYEENUMBER,
     CONCAT(M.FIRSTNAME, ' ', M.LASTNAME) AS MANAGER_NAME,
     U.MANAGER AS MANAGER_EMAIL,
     U.MANAGERID,
     U.MOBILEPHONE,
-    U.POSTALADDRESS,
-    U.COSTCENTER,
     U.TERMINATIONDATE,
     COUNT(UE.ENT_ID) AS ENTITLEMENT_COUNT,
     U.IS_ACTIVE
@@ -349,7 +342,7 @@ FROM USERS U
 LEFT JOIN USERS M ON U.MANAGER = M.USER_ID
 LEFT JOIN USERENTITLEMENTS UE ON U.USER_ID = UE.USER_ID
 WHERE U.IS_ACTIVE = 0
-GROUP BY U.USER_ID, U.USERNAME, U.FIRSTNAME, U.LASTNAME, U.MIDDLENAME, U.EMAIL, U.DISPLAYNAME, U.TITLE, U.DEPARTMENT, U.EMPLOYEENUMBER, U.MANAGER, U.MANAGERID, U.MOBILEPHONE, U.POSTALADDRESS, U.COSTCENTER, U.TERMINATIONDATE, M.FIRSTNAME, M.LASTNAME, U.IS_ACTIVE;
+GROUP BY U.USER_ID, U.USERNAME, U.FIRSTNAME, U.LASTNAME, U.MIDDLENAME, U.EMAIL, U.DISPLAYNAME, U.TITLE, U.ORGANIZATION, U.DEPARTMENT, U.EMPLOYEENUMBER, U.MANAGER, U.MANAGERID, U.MOBILEPHONE, U.TERMINATIONDATE, M.FIRSTNAME, M.LASTNAME, U.IS_ACTIVE;
 
 -- View that shows entitlements with user count
 CREATE OR REPLACE VIEW V_ENTITLEMENT_USAGE AS
@@ -373,12 +366,14 @@ SELECT
     U.EMAIL,
     U.DISPLAYNAME,
     U.TITLE,
+    U.ORGANIZATION,
     U.DEPARTMENT,
     U.EMPLOYEENUMBER,
     U.MANAGER,
     U.MANAGERID,
     CONCAT(M.FIRSTNAME, ' ', M.LASTNAME) AS MANAGER_NAME,
     M.TITLE AS MANAGER_TITLE,
+    M.ORGANIZATION AS MANAGER_ORGANIZATION,
     M.DEPARTMENT AS MANAGER_DEPARTMENT,
     U.IS_ACTIVE
 FROM USERS U
