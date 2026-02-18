@@ -112,7 +112,7 @@ scim.security.bearer.token=da655feabd8ec0c3f89c1fb6e9f0ad39
 
    > Note: Database type should be set to "MySQL" in Okta configuration even though MariaDB is being used, as MariaDB is MySQL-compatible.
 
-   **Stored Procedures**: See [detailed configuration guide](doc/Okta%20Provisioning%20Configuration.md) for configuring all 10 stored procedures (import/provisioning operations)
+   **Stored Procedures**: See [detailed configuration guide](doc/Okta_Provisioning_Configuration.md) for configuring all 10 stored procedures (import/provisioning operations)
 
 5. Configure attribute mappings
 6. Assign users or groups to the application
