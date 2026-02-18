@@ -257,25 +257,10 @@ After completing the local setup, you'll need to configure the Okta Admin Consol
 
 The Okta Generic Database Connector requires configuration in several areas:
 
-1. **Application Integration Setup**
-    - Create a Generic Database Connector app in Okta
-    - Configure SCIM Base URL and authentication
-    - Upload the SCIM server's public certificate
-
-2. **Attribute Mapping**
-    - Map all the user profile fields between Okta and your database
-    - Set up transformation rules if needed
-
-3. **LCM (LifeCycle Management) Operations**
-    - Configure *SQL queries* or *stored procedures* for user lifecycle management (import, create, update, deactivate)
-    - **To Okta (Import)**:
-      - Configure how Okta imports user data from the database
-      - Set up entitlement import from database groups/roles
-    - **To App (Push)**
-      - Configure how Okta pushes user changes to the database (provisioning)
-      - Configure entitlement assignments (add/remove user entitlements)
-
-### Configuration Resources
+1. **Application Integration Setup**: Create and configure the Generic Database Connector application in Okta
+2. **Attribute Mapping**: Map all the user profile fields between Okta and your database, and set up transformation rules if needed
+3. **LCM (LifeCycle Management) Operations**: configure *SQL queries* or *stored procedures* for user lifecycle management (provisioning, deprovisioning, import, update)
+4. **Entitlement Management**: Configure how Okta manages user entitlements (roles) in the database (import, assignment, revocation)
 
 **📘 Detailed Configuration Guide**: See **[doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)** for comprehensive step-by-step instructions with:
 
@@ -752,6 +737,8 @@ For other databases (Oracle, SQL Server, etc.):
 ## 📝 License
 
 This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
+
+---
 
 ## 👤 Author
 
