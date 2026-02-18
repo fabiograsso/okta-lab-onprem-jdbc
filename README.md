@@ -1,14 +1,23 @@
-# 🗄️ Okta Generic Database Connector (JDBC) Lab Environment
+# 🗄️ Okta Generic Database Connector (JDBC) Lab Environment with Docker
 
 A Docker-based laboratory environment for testing Okta's On-Premises Provisioning (OPP) Agent with database connectivity. This setup enables you to quickly deploy and test user provisioning workflows between Okta and on-premises databases (MySQL, MariaDB, PostgreSQL, etc.) using the SCIM protocol.
 
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
 [![Docker](https://img.shields.io/badge/docker-compose-blue.svg)](https://docs.docker.com/compose/)
 
-> 🚀 **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for fast setup instructions.
+> 🚀 **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for very fast setup instructions.
 
 > ⚠️ **Warning**: **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
+
 > 📢 **Note**: This lab environment is designed for testing and demonstration purposes. For production deployments, consult the [official Okta documentation](https://help.okta.com/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm).
+
+
+> 💡 **Not Using Docker?** This repository is still valuable even if you don't plan to use Docker:
+>
+> 1. **Install on a server** using the [Okta official documentation](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
+> 2. **Use the SQL files** in the [`sql/`](sql/) directory to populate your database with tables, stored procedures, and test data
+> 3. **Follow the configuration guide** in [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md) for step-by-step Okta Admin Console setup
+> 4. **Use the SCIM Server technical documentation** in [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md) for advanced reference on API endpoints and troubleshooting
 
 ## 📋 Table of Contents
 
