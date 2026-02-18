@@ -31,7 +31,7 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 - Depends on: `db` service health
 
 ### 3. Okta OPP Agent (`okta-opp`)
-- Base Image: `centos:stream9-minimal`
+- Base Image: `quay.io/centos/centos:stream9-minimal`
 - Platform: `linux/amd64` (for macOS compatibility)
 - Build context: `./docker/okta-opp/`
 - Hostname: `okta-opp`
@@ -47,7 +47,7 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 - Depends on: `db` service health
 
 ### 4. Okta SCIM Server (`okta-scim`)
-- Base Image: `centos:stream9-minimal`
+- Base Image: `quay.io/centos/centos:stream9-minimal`
 - Platform: `linux/amd64` (for macOS compatibility)
 - Build context: `./docker/okta-scim/`
 - Hostname: `okta-scim`
@@ -156,7 +156,7 @@ The MariaDB container automatically executes SQL scripts from `./sql/` directory
 
 Creates three core tables:
 
-**USERS Table** (30 fields total):
+**USERS Table**:
 
 **Identity Fields**:
 - `USER_ID` VARCHAR(100) PRIMARY KEY - User identifier (email format) **(required)**
@@ -514,34 +514,27 @@ Location: `./docker/okta-opp/entrypoint.sh`
 
 1. **Display Okta ASCII logo**: Visual confirmation of startup
 
-2. **Update CA certificates** (if present):
-   - Copies `*.pem` and `*.crt` files from `/packages/` to system trust store
-   - Runs `update-ca-trust`
-   - Shows warning if no certificates found (non-blocking)
-
-3. **Create required directories and set permissions**:
+2. **Create required directories and set permissions**:
    - `/opt/OktaProvisioningAgent/security`
    - `/opt/OktaProvisioningAgent/conf`
    - `/opt/OktaProvisioningAgent/logs`
    - Creates `settings.conf` and `agent.log` if not present
 
-4. **Configure Java options**: Sets `-Xmx4096m` and `-Dhttps.protocols=TLSv1.2` in `settings.conf`
+3. **Configure Java options**: Sets `-Xmx4096m` and `-Dhttps.protocols=TLSv1.2` in `settings.conf`
 
-5. **Set ownership and permissions**:
+4. **Set ownership and permissions**:
    - Ownership to `provisioningagent:provisioningagent`
    - Makes JRE binaries executable
 
-6. **Wait for required configuration files**:
+5. **Wait for required configuration files**:
    - Polls every 10 seconds
    - Checks for required keys in `OktaProvisioningAgent.conf`:
      - orgUrl, agentId, keystoreKey, keyPassword, env, subdomain, agentKey
    - Verifies keystore exists at `/opt/OktaProvisioningAgent/security/OktaProvisioningKeystore.p12`
    - Displays "⏳ Waiting for configuration files" message until ready
 
-7. **Start OPP Agent in background**:
+6. **Start OPP Agent in background**:
    - Executes `/opt/OktaProvisioningAgent/OktaProvisioningAgent` as background process
-
-8. **Tail agent log file**: Continuously displays `/opt/OktaProvisioningAgent/logs/agent.log` for monitoring
 
 **Key Changes from Previous Version**:
 - No longer starts SCIM Server (now in separate container)
@@ -554,26 +547,21 @@ Location: `./docker/okta-scim/entrypoint.sh`
 
 1. **Display Okta ASCII logo**: Visual confirmation of startup
 
-2. **Update CA certificates** (if present):
-   - Copies `*.pem` and `*.crt` files from `/packages/` to system trust store
-   - Runs `update-ca-trust`
-   - Shows warning if no certificates found (non-blocking)
-
-3. **Create certificate symlinks**:
+2. **Create certificate symlinks**:
    - Creates symlinks for certificate and private key directories
    - `/etc/pki/tls/certs/` and `/etc/pki/tls/private/`
 
-4. **Generate CUSTOMER_ID** (if not exists):
+3. **Generate CUSTOMER_ID** (if not exists):
    - Creates unique customer ID if not already configured
    - Saves to `/etc/OktaOnPremScimServer/customer-id.conf`
 
-5. **Generate RSA key pair and certificate**:
+4. **Generate RSA key pair and certificate**:
    - Creates 4096-bit RSA private key
    - Generates self-signed certificate (10-year validity)
    - Creates PKCS12 keystore with random password
    - Saves to `/opt/OktaOnPremScimServer/certs/`
 
-6. **Create Spring Boot configuration**:
+5. **Create Spring Boot configuration**:
    - Generates `config-${CUSTOMER_ID}.properties` with:
      - Server port (1443)
      - SSL/TLS configuration
@@ -581,20 +569,20 @@ Location: `./docker/okta-scim/entrypoint.sh`
      - Auto-generated API bearer token
      - Logging configuration
 
-7. **Create JVM configuration**:
+6. **Create JVM configuration**:
    - Sets memory limits and GC options
    - Saves to `/etc/OktaOnPremScimServer/jvm.conf`
 
-8. **Copy JDBC drivers**:
+7. **Copy JDBC drivers**:
    - Copies all `*.jar` files from `/packages/` to `/opt/OktaOnPremScimServer/userlib/`
    - Handles multiple drivers (MySQL Connector/J, MariaDB Connector/J, PostgreSQL, etc.)
 
-9. **Display SCIM credentials**:
+8. **Display SCIM credentials**:
    - Runs `Get-OktaOnPremScimServer-Credentials.sh`
    - Shows SCIM Base URL, Bearer Token, and other configuration details
    - Makes credentials easily visible in container logs
 
-10. **Start SCIM Server**:
+9. **Start SCIM Server**:
     - Executes `/opt/OktaOnPremScimServer/bin/OktaOnPremScimServer.sh` in foreground
     - Server listens on port 1443 (HTTPS)
 
@@ -993,7 +981,7 @@ This works because the OPP Agent and SCIM Server are on the same Docker network 
 The MariaDB container uses Docker's initialization feature (`/docker-entrypoint-initdb.d/`). All `.sql` files in the `./sql/` directory are automatically executed in alphabetical order on first container startup:
 
 1. **init.sql** - Creates schema with 30-field USERS table and populates test data (15 users from LDIF with extended profiles, 10 entitlements)
-2. **stored_proc.sql** - Creates 10 stored procedures for SCIM operations (CREATE_USER and UPDATE_USER support all 30 fields with 29 parameters)
+2. **stored_proc.sql** - Creates 10 stored procedures for SCIM operations (CREATE_USER and UPDATE_USER support all fields with parameters)
 
 **Important**: These scripts only run once when the database is first initialized. To reset:
 ```bash

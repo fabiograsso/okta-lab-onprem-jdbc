@@ -268,7 +268,7 @@ LOG_LEVEL_SPRING_JDBC=INFO       # Spring JDBC (database operations)
 The database is automatically initialized on first startup with:
 
 **Schema and Test Data** (`sql/init.sql`):
-- **USERS** table: Comprehensive user profiles with 31 fields
+- **USERS** table: Comprehensive user profiles with fields
   - **Identity**: `USER_ID` (PRIMARY KEY), `USERNAME` (UNIQUE), `EMAIL` (NOT NULL)
   - **Personal**: `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `HONORIFICPREFIX`, `DISPLAYNAME`, `NICKNAME`, `BIRTHDATE`
   - **Contact**: `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `POSTALADDRESS`, `TIMEZONE`, `EMERGENCYCONTACT`

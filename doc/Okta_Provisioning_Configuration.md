@@ -95,9 +95,9 @@ All stored procedures are defined in `sql/stored_proc.sql`:
 
 | Procedure | Parameters | Purpose |
 |-----------|------------|---------|
-| `GET_ACTIVEUSERS()` | None | Retrieve all active users (all 30 fields) |
+| `GET_ACTIVEUSERS()` | None | Retrieve all active users (all fields) |
 | `GET_ALL_ENTITLEMENTS()` | None | Retrieve all entitlements |
-| `GET_USER_BY_ID(p_user_id)` | p_user_id VARCHAR(100) | Get specific user details (all 30 fields) |
+| `GET_USER_BY_ID(p_user_id)` | p_user_id VARCHAR(100) | Get specific user details (all fields) |
 | `GET_USER_ENTITLEMENT(p_user_id)` | p_user_id VARCHAR(100) | Get user's entitlements with username |
 | `CREATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Create new user with all fields |
 | `UPDATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Update existing user with all fields |
@@ -117,7 +117,7 @@ flowchart TB
  subgraph s1["Database Tables"]
         USERENTITLEMENTS[("USERENTITLEMENTS<br>Junction Table")]
         ENTITLEMENTS[("ENTITLEMENTS<br>ENT_ID, ENT_NAME, ENT_DESCRIPTION")]
-        USERS[("USERS<br>30 fields")]
+        USERS[("USERS")]
   end
  subgraph s2["Read Operations"]
         GET_USER_ENTITLEMENT["GET_USER_ENTITLEMENT<br>Input: p_user_id"]
@@ -320,7 +320,7 @@ Import all active users from the database.
       ```
 - **User ID Column:** `USER_ID`
 
-💡 **What it does:** Retrieves all active users (where `IS_ACTIVE = 1`) with all 30 fields from the USERS table.
+💡 **What it does:** Retrieves all active users (where `IS_ACTIVE = 1`) with all fields from the USERS table.
 
 ![Configure Get Users import operation with stored procedure or SQL query](img/okta-get-users-configuration.png)
 
@@ -368,7 +368,7 @@ Retrieve specific user details by their USER_ID.
 - **Map Parameters to Fields:**
    - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
-💡 **What it does:** Queries a specific user from the USERS table using their USER_ID, returning all 30 fields.
+💡 **What it does:** Queries a specific user from the USERS table using their USER_ID, returning all fields.
 
 ---
 
