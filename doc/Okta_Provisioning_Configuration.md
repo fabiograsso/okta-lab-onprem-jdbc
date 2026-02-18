@@ -6,8 +6,6 @@ This guide provides detailed instructions for configuring the Okta Generic Datab
 
 - [Overview](#overview)
 - [Prerequisites](#prerequisites)
-- [Database Schema Reference](#database-schema-reference)
-- [Stored Procedures Reference](#stored-procedures-reference)
 - [Create Generic Database Connector Application](#create-generic-database-connector-application)
 - [SQL Queries vs Stored Procedures](#sql-queries-vs-stored-procedures)
 - [Configuration Steps](#configuration-steps)
@@ -20,8 +18,12 @@ This guide provides detailed instructions for configuring the Okta Generic Datab
 - [Check the entitlements sync](#check-the-entitlements-sync)
 - [Testing](#testing)
 - [Other Governance Use Cases](#other-governance-use-cases)
+- [Database Schema Reference](#database-schema-reference)
+- [Stored Procedures Reference](#stored-procedures-reference)
 - [Troubleshooting](#troubleshooting)
 - [Additional Resources](#additional-resources)
+
+---
 
 ## Overview
 
@@ -39,132 +41,6 @@ Before configuring Okta provisioning, ensure:
 1. ✅ OPP Agent is running and connected to Okta
 2. ✅ SCIM Server is running  
 3. ✅ Database is initialized with schema and stored procedures (from `sql/init.sql` and `sql/stored_proc.sql`)
-
-## Database Schema Reference
-
-This configuration uses the following database tables:
-
-| Table | Description | Fields |
-| ----- | ----------- | ------ |
-| **USERS** | Comprehensive user profiles | `USER_ID` (PK), `USERNAME` (UNIQUE), `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `HONORIFICPREFIX`, `EMAIL`, `DISPLAYNAME`, `NICKNAME`, `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `POSTALADDRESS`, `TIMEZONE`, `DEPARTMENT`, `MANAGERID`, `WORKLOCATION`, `EMERGENCYCONTACT`, `PASSWORD_HASH`, `IS_ACTIVE`, `COSTCENTER`, `MANAGER`, `TITLE`, `HIREDATE`, `TERMINATIONDATE`, `BIRTHDATE`, `EMPLOYEENUMBER` |
-| **ENTITLEMENTS** | Available entitlements | `ENT_ID` (PK), `ENT_NAME`, `ENT_DESCRIPTION` |
-| **USERENTITLEMENTS** | User-entitlement mappings | `USERENTITLEMENT_ID` (PK), `USER_ID` (FK), `ENT_ID` (FK), `ASSIGNEDDATE` |
-
-- **Mandatory USERS fields**: `USER_ID`, `USERNAME`, `FIRSTNAME`, `LASTNAME`, `EMAIL`
-- **Optional USERS fields**: All other 25 fields can be NULL
-
-> 💡 The lab includes **15 test users** (Star Wars characters) with pre-configured entitlements.
-
-### Database Diagram
-
-```mermaid
-erDiagram
-    USERS ||--o{ USERENTITLEMENTS : "has"
-    ENTITLEMENTS ||--o{ USERENTITLEMENTS : "assigned_to"
-    
-    USERS {
-        VARCHAR(100) *USER_ID PK "User identifier (email format) - REQUIRED"
-        VARCHAR(100) USERNAME UK "Login username (unique) - REQUIRED"
-        VARCHAR(100) EMAIL "Email address - REQUIRED"
-        VARCHAR(100) FIRSTNAME "First name - REQUIRED"
-        VARCHAR(100) LASTNAME "Last name - REQUIRED"
-        VARCHAR(100) OTHERFIELDS "...Other Fields..."
-        DATE HIREDATE "Date of hire"
-        DATE TERMINATIONDATE "Date of termination"
-        VARCHAR(255) PASSWORD_HASH "Password hash"
-        BOOLEAN IS_ACTIVE "Account status (default TRUE)"
-    }
-    
-    ENTITLEMENTS {
-        INT ENT_ID PK "Entitlement identifier"
-        VARCHAR(100) ENT_NAME UK "Entitlement name (unique)"
-        TEXT ENT_DESCRIPTION "Description of entitlement"
-    }
-    
-    USERENTITLEMENTS {
-        INT USERENTITLEMENT_ID PK "Auto-increment ID"
-        VARCHAR(100) USER_ID FK "Foreign key to USERS"
-        INT ENT_ID FK "Foreign key to ENTITLEMENTS"
-        DATETIME ASSIGNEDDATE "When entitlement was assigned"
-    }
-```
-
-## Stored Procedures Reference
-
-All stored procedures are defined in `sql/stored_proc.sql`:
-
-| Procedure | Parameters | Purpose |
-| --------- | ---------- | ------- |
-| `GET_ACTIVEUSERS()` | None | Retrieve all active users (all fields) |
-| `GET_ALL_ENTITLEMENTS()` | None | Retrieve all entitlements |
-| `GET_USER_BY_ID(p_user_id)` | p_user_id VARCHAR(100) | Get specific user details (all fields) |
-| `GET_USER_ENTITLEMENT(p_user_id)` | p_user_id VARCHAR(100) | Get user's entitlements with username |
-| `CREATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Create new user with all fields |
-| `UPDATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Update existing user with all fields |
-| `ACTIVATE_USER(p_user_id)` | p_user_id VARCHAR(100) | Activate user account |
-| `DEACTIVATE_USER(p_user_id)` | p_user_id VARCHAR(100) | Deactivate user account |
-| `ADD_ENTITLEMENT_TO_USER(...)` | p_user_id, p_ent_id | Assign entitlement |
-| `REMOVE_ENTITLEMENT_FROM_USER(...)` | p_user_id, p_ent_id | Revoke entitlement |
-
-**Note**: CREATE_USER and UPDATE_USER procedures support all 30 user fields. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory. All other fields are optional and can be passed as NULL.
-
-```mermaid
----
-config:
-  layout: elk
----
-flowchart TB
- subgraph s1["Database Tables"]
-        USERENTITLEMENTS[("USERENTITLEMENTS<br>Junction Table")]
-        ENTITLEMENTS[("ENTITLEMENTS<br>ENT_ID, ENT_NAME, ENT_DESCRIPTION")]
-        USERS[("USERS")]
-  end
- subgraph s2["Read Operations"]
-        GET_USER_ENTITLEMENT["GET_USER_ENTITLEMENT<br>Input: p_user_id"]
-        GET_ALL_ENTITLEMENTS["GET_ALL_ENTITLEMENTS<br>Returns all entitlements"]
-        GET_USER_BY_ID["GET_USER_BY_ID<br>Input: p_user_id"]
-        GET_ACTIVEUSERS["GET_ACTIVEUSERS<br>Returns all active users"]
-  end
- subgraph s3["User Lifecycle Operations"]
-        DEACTIVATE_USER["DEACTIVATE_USER<br>Input: p_user_id"]
-        ACTIVATE_USER["ACTIVATE_USER<br>Input: p_user_id"]
-        UPDATE_USER["UPDATE_USER<br>29 Parameters<br>5 mandatory + 24 optional"]
-        CREATE_USER["CREATE_USER<br>29 Parameters<br>5 mandatory + 24 optional"]
-  end
- subgraph s4["Entitlement Management"]
-        REMOVE_ENTITLEMENT["REMOVE_ENTITLEMENT_FROM_USER<br>Inputs: p_user_id, p_ent_id"]
-        ADD_ENTITLEMENT["ADD_ENTITLEMENT_TO_USER<br>Inputs: p_user_id, p_ent_id"]
-  end
-    GET_ACTIVEUSERS -- "SELECT WHERE IS_ACTIVE=1" --> USERS
-    GET_USER_BY_ID -- "SELECT WHERE USER_ID=?" --> USERS
-    GET_ALL_ENTITLEMENTS -- SELECT * --> ENTITLEMENTS
-    GET_USER_ENTITLEMENT -- JOIN --> USERENTITLEMENTS & USERS & ENTITLEMENTS
-    CREATE_USER -- INSERT --> USERS
-    UPDATE_USER -- "UPDATE WHERE USER_ID=?" --> USERS
-    ACTIVATE_USER -- "UPDATE IS_ACTIVE=1" --> USERS
-    DEACTIVATE_USER -- "UPDATE IS_ACTIVE=0" --> USERS
-    ADD_ENTITLEMENT -- INSERT --> USERENTITLEMENTS
-    ADD_ENTITLEMENT -. Validates .-> USERS & ENTITLEMENTS
-    REMOVE_ENTITLEMENT -- DELETE --> USERENTITLEMENTS
-
-     USERS:::tableStyle
-     ENTITLEMENTS:::tableStyle
-     USERENTITLEMENTS:::tableStyle
-     GET_ACTIVEUSERS:::readStyle
-     GET_USER_BY_ID:::readStyle
-     GET_ALL_ENTITLEMENTS:::readStyle
-     GET_USER_ENTITLEMENT:::readStyle
-     CREATE_USER:::lifecycleStyle
-     UPDATE_USER:::lifecycleStyle
-     ACTIVATE_USER:::lifecycleStyle
-     DEACTIVATE_USER:::lifecycleStyle
-     ADD_ENTITLEMENT:::entitlementStyle
-     REMOVE_ENTITLEMENT:::entitlementStyle
-    classDef tableStyle fill:#e1f5ff,stroke:#0066cc,stroke-width:2px
-    classDef readStyle fill:#d4edda,stroke:#28a745,stroke-width:2px
-    classDef lifecycleStyle fill:#fff3cd,stroke:#ffc107,stroke-width:2px
-    classDef entitlementStyle fill:#f8d7da,stroke:#dc3545,stroke-width:2px
-```
 
 ## Create Generic Database Connector Application
 
@@ -257,6 +133,8 @@ Before configuring the provisioning operations, you need to create the Generic D
 
 12. **Connection Success**:  Once the connection is successful, you'll be directed to the **Integration** tab of the **Provisioning** section. From here, you can proceed to configure Schema Discovery & Import and Provisioning operations.
 
+---
+
 ## SQL Queries vs Stored Procedures
 
 The Generic Database Connector supports two approaches for configuring database operations:
@@ -266,6 +144,7 @@ The Generic Database Connector supports two approaches for configuring database 
 
 **This guide provides both options** for each operation, allowing you to choose the approach that best fits your requirements and database architecture.
 Stored procedures are pre-configured in [sql/stored_proc.sql](../sql/stored_proc.sql) and are the recommended approach.
+You can find more information in the **[Stored Procedures Reference](#stored-procedures-reference)** section at the end of this document.
 
 > 📘 **Stored Procedures** are pre-compiled SQL code blocks stored in the database that can be executed with a single call. They act as reusable functions that encapsulate complex queries and business logic.
 >
@@ -308,16 +187,18 @@ Import all active users from the database.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE IS_ACTIVE = 1
-         ```
-- Option 2 - Select **Stored Procedure** (Recommended)
-      - Enter stored procedure call:
-         ```sql
-         CALL GET_ACTIVEUSERS()
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE IS_ACTIVE = 1
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL GET_ACTIVEUSERS()
+   ```
+
 - **User ID Column:** `USER_ID`
 
 💡 **What it does:** Retrieves all active users (where `IS_ACTIVE = 1`) with all fields from the USERS table.
@@ -333,16 +214,18 @@ Import all available entitlements from the database.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         SELECT ENT_ID, ENT_NAME, ENT_DESCRIPTION FROM ENTITLEMENTS
-         ```
-- Option 2 - Select **Stored Procedure**
-      - Enter stored procedure call:
-         ```sql
-         CALL GET_ALL_ENTITLEMENTS
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   SELECT ENT_ID, ENT_NAME, ENT_DESCRIPTION FROM ENTITLEMENTS
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL GET_ALL_ENTITLEMENTS()
+   ```
+
 - **Entitlement ID Column:** `ENT_ID`
 - **Entitlement Display Column:** `ENT_NAME`
 
@@ -357,18 +240,20 @@ Retrieve specific user details by their USER_ID.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE USER_ID = ?
-         ```
-- Option 2 - Select **Stored Procedure** (Recommended)
-      - Enter stored procedure call:
-         ```sql
-         CALL GET_USER_BY_ID(?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   SELECT USER_ID, USERNAME, FIRSTNAME, LASTNAME, MIDDLENAME, HONORIFICPREFIX, EMAIL, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, IS_ACTIVE, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER FROM USERS WHERE USER_ID = ?
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL GET_USER_BY_ID(?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Queries a specific user from the USERS table using their USER_ID, returning all fields.
 
@@ -381,22 +266,24 @@ Retrieve all entitlements assigned to a specific user.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         SELECT UE.USERENTITLEMENT_ID, UE.USER_ID, U.USERNAME, U.EMAIL, UE.ENT_ID, E.ENT_NAME, E.ENT_DESCRIPTION, UE.ASSIGNEDDATE
-         FROM USERENTITLEMENTS UE
-         JOIN USERS U ON UE.USER_ID = U.USER_ID
-         JOIN ENTITLEMENTS E ON UE.ENT_ID = E.ENT_ID
-         WHERE UE.USER_ID = ?
-         ```
-- Option 2 - Select **Stored Procedure**
-      - Enter stored procedure call:
-         ```sql
-         CALL GET_USER_ENTITLEMENT(?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   SELECT UE.USERENTITLEMENT_ID, UE.USER_ID, U.USERNAME, U.EMAIL, UE.ENT_ID, E.ENT_NAME, E.ENT_DESCRIPTION, UE.ASSIGNEDDATE
+   FROM USERENTITLEMENTS UE
+   JOIN USERS U ON UE.USER_ID = U.USER_ID
+   JOIN ENTITLEMENTS E ON UE.ENT_ID = E.ENT_ID
+   WHERE UE.USER_ID = ?
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL GET_USER_ENTITLEMENT(?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Queries the USERENTITLEMENTS table to retrieve all entitlements for a user with JOIN to USERS and ENTITLEMENTS tables.
 
@@ -421,47 +308,49 @@ Create a new user in the database when assigned in Okta.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         INSERT INTO USERS (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME, HONORIFICPREFIX, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ```
-- Option 2 - Select **Stored Procedure** (Recommended)
-      - Enter stored procedure call:
-         ```sql
-         CALL CREATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   INSERT INTO USERS (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL, MIDDLENAME, HONORIFICPREFIX, DISPLAYNAME, NICKNAME, MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, DEPARTMENT, MANAGERID, WORKLOCATION, EMERGENCYCONTACT, PASSWORD_HASH, COSTCENTER, MANAGER, TITLE, HIREDATE, TERMINATIONDATE, BIRTHDATE, EMPLOYEENUMBER)
+   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL CREATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
-      - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
-      - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
-      - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
-      - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
-      - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-      - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
-      - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-      - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
-      - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-      - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-      - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
-      - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
-      - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
-      - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-      - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
-      - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
-      - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-      - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
-      - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
-      - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
-      - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
-      - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
-      - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
-      - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
-      - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
-      - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-      - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
-      - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
+  - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
+  - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
+  - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
+  - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
+  - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
+  - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
+  - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
+  - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
+  - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
+  - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
+  - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
+  - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
+  - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
+  - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
+  - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
+  - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
+  - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
+  - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
+  - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
+  - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
+  - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
+  - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
+  - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
+  - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
+  - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
+  - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
+  - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
+  - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
 
 💡 **What it does:** Inserts a new row into the USERS table with all user attributes. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
@@ -476,48 +365,50 @@ Update existing user attributes in the database.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         UPDATE USERS
-         SET USERNAME = ?, FIRSTNAME = ?, LASTNAME = ?, EMAIL = ?, MIDDLENAME = ?, HONORIFICPREFIX = ?, DISPLAYNAME = ?, NICKNAME = ?, MOBILEPHONE = ?, STREETADDRESS = ?, CITY = ?, STATE = ?, ZIPCODE = ?, COUNTRYCODE = ?, POSTALADDRESS = ?, TIMEZONE = ?, DEPARTMENT = ?, MANAGERID = ?, WORKLOCATION = ?, EMERGENCYCONTACT = ?, PASSWORD_HASH = ?, COSTCENTER = ?, MANAGER = ?, TITLE = ?, HIREDATE = ?, TERMINATIONDATE = ?, BIRTHDATE = ?, EMPLOYEENUMBER = ?
-         WHERE USER_ID = ?
-         ```
-- Option 2 - Select **Stored Procedure** (Recommended)
-      - Enter stored procedure call:
-         ```sql
-         CALL UPDATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   UPDATE USERS
+   SET USERNAME = ?, FIRSTNAME = ?, LASTNAME = ?, EMAIL = ?, MIDDLENAME = ?, HONORIFICPREFIX = ?, DISPLAYNAME = ?, NICKNAME = ?, MOBILEPHONE = ?, STREETADDRESS = ?, CITY = ?, STATE = ?, ZIPCODE = ?, COUNTRYCODE = ?, POSTALADDRESS = ?, TIMEZONE = ?, DEPARTMENT = ?, MANAGERID = ?, WORKLOCATION = ?, EMERGENCYCONTACT = ?, PASSWORD_HASH = ?, COSTCENTER = ?, MANAGER = ?, TITLE = ?, HIREDATE = ?, TERMINATIONDATE = ?, BIRTHDATE = ?, EMPLOYEENUMBER = ?
+   WHERE USER_ID = ?
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL UPDATE_USER(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
-      - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
-      - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
-      - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
-      - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
-      - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-      - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
-      - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-      - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
-      - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-      - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-      - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
-      - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
-      - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
-      - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-      - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
-      - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
-      - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-      - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
-      - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
-      - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
-      - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
-      - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
-      - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
-      - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
-      - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
-      - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-      - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
-      - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID` **(required)**
+  - Parameter 2: `DATABASE_FIELD` → `USERNAME` **(required)**
+  - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
+  - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
+  - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
+  - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
+  - Parameter 7: `DATABASE_FIELD` → `HONORIFICPREFIX` (optional)
+  - Parameter 8: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
+  - Parameter 9: `DATABASE_FIELD` → `NICKNAME` (optional)
+  - Parameter 10: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
+  - Parameter 11: `DATABASE_FIELD` → `STREETADDRESS` (optional)
+  - Parameter 12: `DATABASE_FIELD` → `CITY` (optional)
+  - Parameter 13: `DATABASE_FIELD` → `STATE` (optional)
+  - Parameter 14: `DATABASE_FIELD` → `ZIPCODE` (optional)
+  - Parameter 15: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
+  - Parameter 16: `DATABASE_FIELD` → `POSTALADDRESS` (optional)
+  - Parameter 17: `DATABASE_FIELD` → `TIMEZONE` (optional)
+  - Parameter 18: `DATABASE_FIELD` → `DEPARTMENT` (optional)
+  - Parameter 19: `DATABASE_FIELD` → `MANAGERID` (optional)
+  - Parameter 20: `DATABASE_FIELD` → `WORKLOCATION` (optional)
+  - Parameter 21: `DATABASE_FIELD` → `EMERGENCYCONTACT` (optional)
+  - Parameter 22: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
+  - Parameter 23: `DATABASE_FIELD` → `COSTCENTER` (optional)
+  - Parameter 24: `DATABASE_FIELD` → `MANAGER` (optional)
+  - Parameter 25: `DATABASE_FIELD` → `TITLE` (optional)
+  - Parameter 26: `DATABASE_FIELD` → `HIREDATE` (optional)
+  - Parameter 27: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
+  - Parameter 28: `DATABASE_FIELD` → `BIRTHDATE` (optional)
+  - Parameter 29: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
 
 💡 **What it does:** Updates the USERS table record matching the USER_ID with new attribute values. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
@@ -532,18 +423,20 @@ Activate a user account (set IS_ACTIVE = 1).
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         UPDATE USERS SET IS_ACTIVE = 1 WHERE USER_ID = ?
-         ```
-- Option 2 - Select **Stored Procedure**
-      - Enter stored procedure call:
-         ```sql
-         CALL ACTIVATE_USER(?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   UPDATE USERS SET IS_ACTIVE = 1 WHERE USER_ID = ?
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL ACTIVATE_USER(?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Sets `IS_ACTIVE = TRUE` for the specified user in the USERS table.
 
@@ -556,18 +449,20 @@ Deactivate a user account (set IS_ACTIVE = 0).
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         UPDATE USERS SET IS_ACTIVE = 0 WHERE USER_ID = ?
-         ```
-- Option 2 - Select **Stored Procedure**
-      - Enter stored procedure call:
-         ```sql
-         CALL DEACTIVATE_USER(?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   UPDATE USERS SET IS_ACTIVE = 0 WHERE USER_ID = ?
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL DEACTIVATE_USER(?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID`
 
 💡 **What it does:** Sets `IS_ACTIVE = FALSE` for the specified user in the USERS table.
 
@@ -580,19 +475,21 @@ Assign an entitlement to a user.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         INSERT INTO USERENTITLEMENTS (USER_ID, ENT_ID, ASSIGNEDDATE) VALUES (?, ?, NOW())
-         ```
-- Option 2 - Select **Stored Procedure**
-      - Enter stored procedure call:
-         ```sql
-         CALL ADD_ENTITLEMENT_TO_USER(?, ?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   INSERT INTO USERENTITLEMENTS (USER_ID, ENT_ID, ASSIGNEDDATE) VALUES (?, ?, NOW())
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL ADD_ENTITLEMENT_TO_USER(?, ?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
-      - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+  - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
 
 💡 **What it does:** Inserts a new row into the USERENTITLEMENTS table, creating a user-entitlement mapping.
 
@@ -605,19 +502,21 @@ Revoke an entitlement from a user.
 **Configuration:**
 
 - ✅ Check **Enabled**
-- Option 1 - Select **SQL Satement**
-      - Enter SQL query:
-         ```sql
-         DELETE FROM USERENTITLEMENTS WHERE USER_ID = ? AND ENT_ID = ?
-         ```
-- Option 2 - Select **Stored Procedure**
-      - Enter stored procedure call:
-         ```sql
-         CALL REMOVE_ENTITLEMENT_FROM_USER(?, ?)
-         ```
+- Option 1 - Select **SQL Statement**, and enter the SQL query:
+
+   ```sql
+   DELETE FROM USERENTITLEMENTS WHERE USER_ID = ? AND ENT_ID = ?
+   ```
+
+- Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
+
+   ```sql
+   CALL REMOVE_ENTITLEMENT_FROM_USER(?, ?)
+   ```
+
 - **Map Parameters to Fields:**
-      - Parameter 1: `DATABASE_FIELD` → `USER_ID`
-      - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
+  - Parameter 1: `DATABASE_FIELD` → `USER_ID`
+  - Parameter 2: `DATABASE_FIELD` → `ENT_ID`
 
 💡 **What it does:** Deletes the row from the USERENTITLEMENTS table matching the user and entitlement.
 
@@ -1049,6 +948,136 @@ Once you have the Generic Database Connector set up, you can explore additional 
 - **Entitlements Policies**: Define policies in Okta to govern how entitlements are assigned based on user attributes (e.g., department, location). Documentation: [Okta Help - Create an Entitlement Policy](https://help.okta.com/oie/en-us/content/topics/governance/policies/entitlement-policy-create.htm).
 - **Access Requests**: Use Okta's Access Request feature to allow users to request entitlements, with approval workflows and automated provisioning. Documentation: [Okta Help - Access Requests](https://help.okta.com/oie/en-us/content/topics/governance/access-requests.htm).
 - **Access Certification Campaigns**: Implement one time or periodic access reviews for entitlements to ensure compliance and recertification. Documentation: [Okta Help - Access Certification](https://help.okta.com/oie/en-us/content/topics/governance/access-certification.htm).
+
+---
+
+## Database Schema Reference
+
+This configuration uses the following database tables:
+
+| Table | Description | Fields |
+| ----- | ----------- | ------ |
+| **USERS** | Comprehensive user profiles | `USER_ID` (PK), `USERNAME` (UNIQUE), `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `HONORIFICPREFIX`, `EMAIL`, `DISPLAYNAME`, `NICKNAME`, `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `POSTALADDRESS`, `TIMEZONE`, `DEPARTMENT`, `MANAGERID`, `WORKLOCATION`, `EMERGENCYCONTACT`, `PASSWORD_HASH`, `IS_ACTIVE`, `COSTCENTER`, `MANAGER`, `TITLE`, `HIREDATE`, `TERMINATIONDATE`, `BIRTHDATE`, `EMPLOYEENUMBER` |
+| **ENTITLEMENTS** | Available entitlements | `ENT_ID` (PK), `ENT_NAME`, `ENT_DESCRIPTION` |
+| **USERENTITLEMENTS** | User-entitlement mappings | `USERENTITLEMENT_ID` (PK), `USER_ID` (FK), `ENT_ID` (FK), `ASSIGNEDDATE` |
+
+- **Mandatory USERS fields**: `USER_ID`, `USERNAME`, `FIRSTNAME`, `LASTNAME`, `EMAIL`
+- **Optional USERS fields**: All other 25 fields can be NULL
+
+> 💡 The lab includes **15 test users** (Star Wars characters) with pre-configured entitlements.
+
+### Database Diagram
+
+```mermaid
+erDiagram
+    USERS ||--o{ USERENTITLEMENTS : "has"
+    ENTITLEMENTS ||--o{ USERENTITLEMENTS : "assigned_to"
+    
+    USERS {
+        VARCHAR(100) *USER_ID PK "User identifier (email format) - REQUIRED"
+        VARCHAR(100) USERNAME UK "Login username (unique) - REQUIRED"
+        VARCHAR(100) EMAIL "Email address - REQUIRED"
+        VARCHAR(100) FIRSTNAME "First name - REQUIRED"
+        VARCHAR(100) LASTNAME "Last name - REQUIRED"
+        VARCHAR(100) OTHERFIELDS "...Other Fields..."
+        DATE HIREDATE "Date of hire"
+        DATE TERMINATIONDATE "Date of termination"
+        VARCHAR(255) PASSWORD_HASH "Password hash"
+        BOOLEAN IS_ACTIVE "Account status (default TRUE)"
+    }
+    
+    ENTITLEMENTS {
+        INT ENT_ID PK "Entitlement identifier"
+        VARCHAR(100) ENT_NAME UK "Entitlement name (unique)"
+        TEXT ENT_DESCRIPTION "Description of entitlement"
+    }
+    
+    USERENTITLEMENTS {
+        INT USERENTITLEMENT_ID PK "Auto-increment ID"
+        VARCHAR(100) USER_ID FK "Foreign key to USERS"
+        INT ENT_ID FK "Foreign key to ENTITLEMENTS"
+        DATETIME ASSIGNEDDATE "When entitlement was assigned"
+    }
+```
+
+---
+
+## Stored Procedures Reference
+
+All stored procedures are defined in `sql/stored_proc.sql`:
+
+| Procedure | Parameters | Purpose |
+| --------- | ---------- | ------- |
+| `GET_ACTIVEUSERS()` | None | Retrieve all active users (all fields) |
+| `GET_ALL_ENTITLEMENTS()` | None | Retrieve all entitlements |
+| `GET_USER_BY_ID(p_user_id)` | p_user_id VARCHAR(100) | Get specific user details (all fields) |
+| `GET_USER_ENTITLEMENT(p_user_id)` | p_user_id VARCHAR(100) | Get user's entitlements with username |
+| `CREATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Create new user with all fields |
+| `UPDATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Update existing user with all fields |
+| `ACTIVATE_USER(p_user_id)` | p_user_id VARCHAR(100) | Activate user account |
+| `DEACTIVATE_USER(p_user_id)` | p_user_id VARCHAR(100) | Deactivate user account |
+| `ADD_ENTITLEMENT_TO_USER(...)` | p_user_id, p_ent_id | Assign entitlement |
+| `REMOVE_ENTITLEMENT_FROM_USER(...)` | p_user_id, p_ent_id | Revoke entitlement |
+
+**Note**: CREATE_USER and UPDATE_USER procedures support all 30 user fields. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory. All other fields are optional and can be passed as NULL.
+
+```mermaid
+---
+config:
+  layout: elk
+---
+flowchart TB
+ subgraph s1["Database Tables"]
+        USERENTITLEMENTS[("USERENTITLEMENTS<br>Junction Table")]
+        ENTITLEMENTS[("ENTITLEMENTS<br>ENT_ID, ENT_NAME, ENT_DESCRIPTION")]
+        USERS[("USERS")]
+  end
+ subgraph s2["Read Operations"]
+        GET_USER_ENTITLEMENT["GET_USER_ENTITLEMENT<br>Input: p_user_id"]
+        GET_ALL_ENTITLEMENTS["GET_ALL_ENTITLEMENTS<br>Returns all entitlements"]
+        GET_USER_BY_ID["GET_USER_BY_ID<br>Input: p_user_id"]
+        GET_ACTIVEUSERS["GET_ACTIVEUSERS<br>Returns all active users"]
+  end
+ subgraph s3["User Lifecycle Operations"]
+        DEACTIVATE_USER["DEACTIVATE_USER<br>Input: p_user_id"]
+        ACTIVATE_USER["ACTIVATE_USER<br>Input: p_user_id"]
+        UPDATE_USER["UPDATE_USER<br>29 Parameters<br>5 mandatory + 24 optional"]
+        CREATE_USER["CREATE_USER<br>29 Parameters<br>5 mandatory + 24 optional"]
+  end
+ subgraph s4["Entitlement Management"]
+        REMOVE_ENTITLEMENT["REMOVE_ENTITLEMENT_FROM_USER<br>Inputs: p_user_id, p_ent_id"]
+        ADD_ENTITLEMENT["ADD_ENTITLEMENT_TO_USER<br>Inputs: p_user_id, p_ent_id"]
+  end
+    GET_ACTIVEUSERS -- "SELECT WHERE IS_ACTIVE=1" --> USERS
+    GET_USER_BY_ID -- "SELECT WHERE USER_ID=?" --> USERS
+    GET_ALL_ENTITLEMENTS -- SELECT * --> ENTITLEMENTS
+    GET_USER_ENTITLEMENT -- JOIN --> USERENTITLEMENTS & USERS & ENTITLEMENTS
+    CREATE_USER -- INSERT --> USERS
+    UPDATE_USER -- "UPDATE WHERE USER_ID=?" --> USERS
+    ACTIVATE_USER -- "UPDATE IS_ACTIVE=1" --> USERS
+    DEACTIVATE_USER -- "UPDATE IS_ACTIVE=0" --> USERS
+    ADD_ENTITLEMENT -- INSERT --> USERENTITLEMENTS
+    ADD_ENTITLEMENT -. Validates .-> USERS & ENTITLEMENTS
+    REMOVE_ENTITLEMENT -- DELETE --> USERENTITLEMENTS
+
+     USERS:::tableStyle
+     ENTITLEMENTS:::tableStyle
+     USERENTITLEMENTS:::tableStyle
+     GET_ACTIVEUSERS:::readStyle
+     GET_USER_BY_ID:::readStyle
+     GET_ALL_ENTITLEMENTS:::readStyle
+     GET_USER_ENTITLEMENT:::readStyle
+     CREATE_USER:::lifecycleStyle
+     UPDATE_USER:::lifecycleStyle
+     ACTIVATE_USER:::lifecycleStyle
+     DEACTIVATE_USER:::lifecycleStyle
+     ADD_ENTITLEMENT:::entitlementStyle
+     REMOVE_ENTITLEMENT:::entitlementStyle
+    classDef tableStyle fill:#e1f5ff,stroke:#0066cc,stroke-width:2px
+    classDef readStyle fill:#d4edda,stroke:#28a745,stroke-width:2px
+    classDef lifecycleStyle fill:#fff3cd,stroke:#ffc107,stroke-width:2px
+    classDef entitlementStyle fill:#f8d7da,stroke:#dc3545,stroke-width:2px
+```
 
 ---
 
