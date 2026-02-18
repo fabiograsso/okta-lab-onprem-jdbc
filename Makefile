@@ -20,6 +20,8 @@ help:
 	@echo "  kill           - Kill the containers and remove orphans"
 	@echo "  configure      - Runs the interactive Okta agent configuration script."
 	@echo "  check-prereqs  - Runs prerequisite checks without starting the services."
+	@echo "  check-build-prereqs  - Runs buil prerequisite checks without starting the services."
+
 
 start: check-prereqs
 	@echo "--> Starting containers in detached mode..."
@@ -66,6 +68,30 @@ configure:
 check-prereqs:
 	@echo ""
 	@echo "--> Checking prerequisites..."
+	@$(MAKE) check-docker
+	@if [ ! -f .env ]; then \
+		echo "\033[0;31m  [x] ERROR: .env file not found!\033[0m"; \
+		echo "Please copy the sample environment file: cp .env-sample .env"; \
+		exit 1; \
+	else \
+		echo "\033[0;32m  [✔] .env file exists\033[0m"; \
+	fi
+	@for var in MARIADB_DATABASE MARIADB_USER MARIADB_PASSWORD MARIADB_ROOT_PASSWORD; do \
+		eval value=\$$$$var; \
+		if [ -z "$$value" ]; then \
+			echo "\033[0;31m  [x] ERROR: $$var is not set in .env file!\033[0m"; \
+			exit 1; \
+		fi; \
+	done
+	@echo "\033[0;32m  [✔] All required environment variables are set\033[0m"
+	@echo "\033[0;32m[✔] All prerequisites check passed\033[0m"
+	@echo ""
+
+
+check-build-prereqs:
+	@echo ""
+	@echo "--> Checking build prerequisites..."
+	@$(MAKE) check-docker
 	@if ! ls ./docker/okta-opp/packages/OktaProvisioningAgent-*.rpm 1>/dev/null 2>&1; then \
 		echo "\033[0;31m  [x] ERROR: Okta Provisioning Agent RPM not found!\033[0m"; \
 		echo "Please place the OktaProvisioningAgent-*.rpm file in the './docker/okta-opp/packages/' directory."; \
@@ -92,3 +118,17 @@ check-prereqs:
 	fi
 	@echo "\033[0;32m[✔] All prerequisites check passed\033[0m"
 	@echo ""
+
+check-docker:
+	@if ! docker info > /dev/null 2>&1; then \
+		echo "\033[0;31m  [x] ERROR: Docker is not running, not installed, not in PATH or you don't have permissions to access it!\033[0m"; \
+		exit 1; \
+	else \
+		echo "\033[0;32m  [✔] Docker is running and accessible\033[0m"; \
+	fi
+	@if ! command -v docker-compose &> /dev/null; then \
+		echo "\033[0;31m  [x] ERROR: Docker Compose is not installed or not in PATH!\033[0m"; \
+		exit 1; \
+	else \
+		echo "\033[0;32m  [✔] Docker Compose is installed\033[0m"; \
+	fi
