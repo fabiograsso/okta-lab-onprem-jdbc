@@ -278,7 +278,7 @@ The database is automatically initialized on first startup with:
 - **ENTITLEMENTS** table: Access entitlements
   - `ENT_ID` (PRIMARY KEY), `ENT_NAME`, `ENT_DESCRIPTION`
 - **USERENTITLEMENTS** table: Junction table for user-entitlement mappings
-  - `USERENTITLEMENTID` (PRIMARY KEY), `USER_ID`, `ENT_ID`, `ASSIGNED_DATE`
+  - `USERENTITLEMENT_ID` (PRIMARY KEY), `USER_ID`, `ENT_ID`, `ASSIGNED_DATE`
 - **Test Data**: 15 Star Wars-themed users from LDIF with realistic job roles, departments, and entitlement assignments
 
 **Stored Procedures** (`sql/stored_proc.sql`):

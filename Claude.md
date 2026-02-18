@@ -37,14 +37,13 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 - Hostname: `okta-opp`
 - Components:
   - Okta Provisioning Agent
-  - OpenJDK 21 Headless (system package: java-21-openjdk-headless)
   - Oracle JDK 21 (bundled with agent RPM as fallback)
 - Volumes:
   - `./data/okta-opp/conf` → `/opt/OktaProvisioningAgent/conf/`
   - `./data/okta-opp/logs` → `/opt/OktaProvisioningAgent/logs/`
   - `./data/okta-opp/security` → `/opt/OktaProvisioningAgent/security/`
   - `./docker/okta-opp/packages` → `/packages` (read-only)
-- Depends on: `db` service health
+- Depends on: `okta-scim` service health
 
 ### 4. Okta SCIM Server (`okta-scim`)
 - Base Image: `quay.io/centos/centos:stream9-minimal`
@@ -74,8 +73,6 @@ The project consists of four Docker services with separated OPP Agent and SCIM S
 ├── Makefile                      # Build and deployment commands
 ├── README.md                     # User-facing documentation
 ├── CLAUDE.md                     # This file (AI assistant documentation)
-├── CHANGELOG.md                  # Version history and changes
-├── SECURITY.md                   # Security policy
 ├── data/                         # Persistent data (gitignored)
 │   ├── mysql/                    # MariaDB data files
 │   ├── okta-opp/                 # OPP Agent data
@@ -205,10 +202,10 @@ Creates three core tables:
 **ENTITLEMENTS Table**:
 - `ENT_ID` INT PRIMARY KEY - Entitlement identifier (manually specified values 1-10)
 - `ENT_NAME` VARCHAR(100) UNIQUE - Entitlement name
-- `ENT_DESCRIPTION` TEXT - Description of the entitlement
+- `ENT_DESCRIPTION` VARCHAR(255) - Description of the entitlement
 
 **USERENTITLEMENTS Table** (junction table):
-- `USERENTITLEMENT_ID` INT PRIMARY KEY AUTO_INCREMENT
+- `USERENTITLEMENT_ID` UUID PRIMARY KEY - Unique identifier for each user-entitlement assignment
 - `USER_ID` VARCHAR(100) - Foreign key to USERS
 - `ENT_ID` INT - Foreign key to ENTITLEMENTS
 - `ASSIGNEDDATE` DATETIME - When entitlement was assigned

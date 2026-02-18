@@ -316,7 +316,7 @@ Import all active users from the database.
 - Option 2 - Select **Stored Procedure** (Recommended)
    - Enter stored procedure call:
       ```sql
-      CALL GET_ACTIVEUSERS
+      CALL GET_ACTIVEUSERS()
       ```
 - **User ID Column:** `USER_ID`
 
@@ -381,7 +381,7 @@ Retrieve all entitlements assigned to a specific user.
 - Option 1 - Select **SQL Satement**
    - Enter SQL query:
       ```sql
-      SELECT UE.USERENTITLEMENTID, UE.USER_ID, U.USERNAME, U.EMAIL, UE.ENT_ID, E.ENT_NAME, E.ENT_DESCRIPTION, UE.ASSIGNEDDATE 
+      SELECT UE.USERENTITLEMENT_ID, UE.USER_ID, U.USERNAME, U.EMAIL, UE.ENT_ID, E.ENT_NAME, E.ENT_DESCRIPTION, UE.ASSIGNEDDATE 
       FROM USERENTITLEMENTS UE 
       JOIN USERS U ON UE.USER_ID = U.USER_ID 
       JOIN ENTITLEMENTS E ON UE.ENT_ID = E.ENT_ID 
