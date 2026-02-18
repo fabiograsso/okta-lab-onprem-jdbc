@@ -353,69 +353,9 @@ CREATE PROCEDURE REMOVE_ENTITLEMENT_FROM_USER(
     IN p_ent_id INT
 )
 BEGIN
-    DELETE FROM USERENTITLEMENTS 
-    WHERE USER_ID = p_user_id 
+    DELETE FROM USERENTITLEMENTS
+    WHERE USER_ID = p_user_id
     AND ENT_ID = p_ent_id;
 END$$
 
-
-
-
--- Grant EXECUTE permission on all stored procedures in the oktademo database
-GRANT EXECUTE ON oktademo.* TO 'oktademo'@'%';
-
--- Explicitly grant EXECUTE on each stored procedure (for clarity)
-GRANT EXECUTE ON PROCEDURE oktademo.GET_ACTIVEUSERS TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.GET_ALL_ENTITLEMENTS TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.GET_USER_BY_ID TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.GET_USER_ENTITLEMENT TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.CREATE_USER TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.UPDATE_USER TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.ACTIVATE_USER TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.DEACTIVATE_USER TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.ADD_ENTITLEMENT_TO_USER TO 'oktademo'@'%';
-GRANT EXECUTE ON PROCEDURE oktademo.REMOVE_ENTITLEMENT_FROM_USER TO 'oktademo'@'%';
-
--- Flush privileges to ensure changes take effect
-FLUSH PRIVILEGES;
-
-
 DELIMITER ;
-
--- ============================================================================
--- Example usage and testing
--- ============================================================================
-
--- Test GET_ACTIVEUSERS
--- CALL GET_ACTIVEUSERS();
-
--- Test GET_ALL_ENTITLEMENTS
--- CALL GET_ALL_ENTITLEMENTS();
-
--- Test GET_USER_BY_ID
--- CALL GET_USER_BY_ID('luke.skywalker@galaxy.local');
-
--- Test GET_USER_ENTITLEMENT
--- CALL GET_USER_ENTITLEMENT('luke.skywalker@galaxy.local');
-
--- Test CREATE_USER
--- CALL CREATE_USER('test.user@galaxy.local', 'Test', 'User', 'test.user@example.com', 'manager@example.com', 'Developer');
-
--- Test UPDATE_USER
--- CALL UPDATE_USER('luke.skywalker@galaxy.local', 'Luke', 'Skywalker', 'luke.new@galaxy.local', 'yoda@galaxy.local', 'Jedi Master');
-
--- Test ACTIVATE_USER
--- CALL ACTIVATE_USER('luke.skywalker@galaxy.local');
-
--- Test DEACTIVATE_USER
--- CALL DEACTIVATE_USER('luke.skywalker@galaxy.local');
-
--- Test ADD_ENTITLEMENT_TO_USER
--- CALL ADD_ENTITLEMENT_TO_USER('luke.skywalker@galaxy.local', 5);
-
--- Test REMOVE_ENTITLEMENT_FROM_USER
--- CALL REMOVE_ENTITLEMENT_FROM_USER('luke.skywalker@galaxy.local', 5);
-
--- ============================================================================
--- End of stored_proc.sql
--- ============================================================================
