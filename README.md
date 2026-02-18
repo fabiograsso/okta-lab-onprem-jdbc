@@ -689,15 +689,16 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 - GitHub: [@fabiograsso](https://github.com/fabiograsso)
 
 ---
+
 ### Disclaimer
 
-This is a demonstration laboratory environment. It is not officially supported by Okta for production use. Always consult official Okta documentation and support for production deployments.
+This is a demonstration laboratory environment designed for testing and demonstration purposes. It is not officially supported by Okta for production use. Always consult [official Okta documentation](https://help.okta.com/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm) and support for production deployments.
+
+> ⚠️ **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult [official Okta documentation](https://help.okta.com/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm) and support for production deployments. Again: **this environment is for testing and demonstration purposes only**.
 
 ### JDBC Driver Licensing
 
-The MySQL Connector/J driver is automatically downloaded during Docker build from 
-Maven Central (Oracle's official distribution). Licensed under GPL v2 with the 
-Universal FOSS Exception.
+The MySQL Connector/J driver is automatically downloaded during Docker build from Maven Central (Oracle's official distribution). Licensed under GPL v2 with the Universal FOSS Exception.
 
 - License: https://oss.oracle.com/licenses/universal-foss-exception/
 - Source: https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/
