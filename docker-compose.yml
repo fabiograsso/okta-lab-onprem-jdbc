@@ -7,10 +7,8 @@ services:
       - ./sql:/docker-entrypoint-initdb.d/:ro
     healthcheck:
       test: /usr/bin/mariadb-admin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD
-      start_period: 5s
-    #  interval: 5s
-    #  timeout: 5s
-    #  retries: 10
+      start_period: 30s
+      start_interval: 1s
     env_file: .env
 
   # DBGate UI
@@ -57,9 +55,5 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "1443:1443"
     env_file: .env
     platform: linux/amd64 # Workaround for compatibility with MacOS
-    stdin_open: true
-    tty: true
