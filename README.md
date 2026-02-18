@@ -253,16 +253,15 @@ docker compose exec okta-scim bash -c 'cat /opt/OktaOnPremScimServer/certs/OktaO
 
 After completing the local setup, you'll need to configure the Okta Admin Console to connect to your on-premises environment.
 
-### What You'll Configure
-
 The Okta Generic Database Connector requires configuration in several areas:
 
-1. **Application Integration Setup**: Create and configure the Generic Database Connector application in Okta
-2. **Attribute Mapping**: Map all the user profile fields between Okta and your database, and set up transformation rules if needed
+1. **Application Integration Setup**: create and configure the Generic Database Connector application in Okta
+2. **Attribute Mapping**: map all the user profile fields between Okta and your database, and set up transformation rules if needed
 3. **LCM (LifeCycle Management) Operations**: configure *SQL queries* or *stored procedures* for user lifecycle management (provisioning, deprovisioning, import, update)
-4. **Entitlement Management**: Configure how Okta manages user entitlements (roles) in the database (import, assignment, revocation)
+4. **Entitlement Management**: configure how Okta manages user entitlements (roles) in the database (import, assignment, revocation)
 
-**📘 Detailed Configuration Guide**: See **[doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)** for comprehensive step-by-step instructions with:
+### 📘 Detailed Configuration Guide**
+See **[doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)** for comprehensive step-by-step instructions with:
 
 - Screenshots and visual guides for each configuration step
 - Complete stored procedure parameter mappings
@@ -270,7 +269,7 @@ The Okta Generic Database Connector requires configuration in several areas:
 - Entitlement management setup
 - Testing procedures and troubleshooting tips
 
-Since the configuration involves multiple steps in the Okta Admin Console, I prefer to keep the detailed instructions in a [separate document](doc/Okta_Provisioning_Configuration.md) to maintain clarity and focus in this main README.
+> 💡 Since the configuration involves multiple steps in the Okta Admin Console, I prefer to keep the detailed instructions in a [separate document](doc/Okta_Provisioning_Configuration.md) to maintain clarity and focus in this main README.
 
 ---
 
