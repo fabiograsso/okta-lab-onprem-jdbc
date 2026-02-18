@@ -153,51 +153,9 @@ The MariaDB container automatically executes SQL scripts from `./sql/` directory
 
 Creates three core tables:
 
-**USERS Table**:
-
-**Identity Fields**:
-- `USER_ID` VARCHAR(100) PRIMARY KEY - User identifier (email format) **(required)**
-- `USERNAME` VARCHAR(100) UNIQUE NOT NULL - Login username (unique constraint enforced) **(required)**
-- `EMAIL` VARCHAR(100) NOT NULL - Email address **(required)**
-
-**Personal Information**:
-- `FIRSTNAME` VARCHAR(100) - First name **(required)**
-- `LASTNAME` VARCHAR(100) - Last name **(required)**
-- `MIDDLENAME` VARCHAR(100) - Middle name (nullable)
-- `HONORIFICPREFIX` VARCHAR(50) - Honorific prefix (Mr., Ms., Dr., etc.) (nullable)
-- `DISPLAYNAME` VARCHAR(200) - Display name for UI (nullable)
-- `NICKNAME` VARCHAR(100) - Nickname or preferred name (nullable)
-- `BIRTHDATE` DATE - Date of birth (nullable)
-
-**Contact Information**:
-- `MOBILEPHONE` VARCHAR(50) - Mobile phone number (nullable)
-- `STREETADDRESS` VARCHAR(200) - Street address (nullable)
-- `CITY` VARCHAR(100) - City (nullable)
-- `STATE` VARCHAR(100) - State or province (nullable)
-- `ZIPCODE` VARCHAR(20) - ZIP or postal code (nullable)
-- `COUNTRYCODE` VARCHAR(10) - Country code (nullable)
-- `POSTALADDRESS` VARCHAR(500) - Full postal address (nullable)
-- `TIMEZONE` VARCHAR(100) - User's timezone (nullable)
-- `EMERGENCYCONTACT` VARCHAR(200) - Emergency contact information (nullable)
-
-**Work Information**:
-- `TITLE` VARCHAR(100) - Title (nullable)
-- `DEPARTMENT` VARCHAR(100) - Department (nullable)
-- `EMPLOYEENUMBER` VARCHAR(50) - Employee number (nullable)
-- `MANAGER` VARCHAR(100) - Manager's USER_ID (nullable)
-- `MANAGERID` VARCHAR(100) - Manager ID (nullable)
-- `WORKLOCATION` VARCHAR(200) - Work location (nullable)
-- `COSTCENTER` VARCHAR(100) - Cost center (nullable)
-
-**Employment Dates**:
-- `HIREDATE` DATE - Date of hire (nullable)
-- `TERMINATIONDATE` DATE - Date of termination (nullable)
-
-**Security**:
-- `PASSWORD_HASH` VARCHAR(255) - Password hash (nullable)
-- `IS_ACTIVE` BOOLEAN - Account status (default TRUE)
-
-**Mandatory Fields**: Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are required. All other 25 fields are optional and can be NULL.
+**USERS Table** (30 fields):
+- **Required** (5): USER_ID (PK), USERNAME, FIRSTNAME, LASTNAME, EMAIL
+- **Optional** (25): Identity (MIDDLENAME, HONORIFICPREFIX, DISPLAYNAME, NICKNAME, BIRTHDATE), Contact (MOBILEPHONE, STREETADDRESS, CITY, STATE, ZIPCODE, COUNTRYCODE, POSTALADDRESS, TIMEZONE, EMERGENCYCONTACT), Work (TITLE, DEPARTMENT, EMPLOYEENUMBER, MANAGER, MANAGERID, WORKLOCATION, COSTCENTER), Dates (HIREDATE, TERMINATIONDATE), Security (PASSWORD_HASH, IS_ACTIVE)
 
 **ENTITLEMENTS Table**:
 - `ENT_ID` INT PRIMARY KEY - Entitlement identifier (manually specified values 1-10)
