@@ -39,8 +39,12 @@ This lab environment uses stored procedures to handle these operations, providin
 Before configuring Okta provisioning, ensure:
 
 1. ✅ OPP Agent is running and connected to Okta
-2. ✅ SCIM Server is running  
+2. ✅ SCIM Server is running
 3. ✅ Database is initialized with schema and stored procedures (from `sql/init.sql` and `sql/stored_proc.sql`)
+
+> 💡 **Deployment Note**: This lab uses separate Docker containers for demonstration purposes, you can also install the OPP Agent and SCIM Server on the **same server**.
+> The configuration steps in this guide apply to both deployment models. When both components are on the same server, you would use `localhost` as the SCIM hostname instead of a container name.
+> See the [Deployment Architecture Options in the README.md](../README.md#deployment-architecture-options) for more details.
 
 ## Create Generic Database Connector Application
 
@@ -132,6 +136,10 @@ Before configuring the provisioning operations, you need to create the Generic D
       ![Connecting agents loading popup during provisioning setup](img/okta-connecting-agents-popup.png)
 
 12. **Connection Success**:  Once the connection is successful, you'll be directed to the **Integration** tab of the **Provisioning** section. From here, you can proceed to configure Schema Discovery & Import and Provisioning operations.
+
+### Multi-Database Support
+
+A single OPP Agent and SCIM Server can connect to **up to 8 different databases** simultaneously. This allows you to manage users and entitlements across multiple database systems from a single on-premises infrastructure. Each database connection is configured as a **separate Generic Database Connector application instance** in Okta.
 
 ---
 

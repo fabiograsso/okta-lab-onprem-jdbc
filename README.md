@@ -1,4 +1,4 @@
-# 🗄️ Okta Generic Database Connector (JDBC) Lab Environment with Docker
+# 🗄️ Okta Generic Database Connector (JDBC) Lab Environment with Docker 🐳
 
 A Docker-based laboratory environment for testing Okta's On-Premises Provisioning (OPP) Agent with database connectivity. This setup enables you to quickly deploy and test user provisioning workflows between Okta and on-premises databases (MySQL, MariaDB, PostgreSQL, etc.) using the SCIM protocol.
 
@@ -14,7 +14,7 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 >
 > 💡 **Not Using Docker?** This repository is still valuable even if you don't plan to use Docker:
 >
-> 1. **Install on a server** using the [Okta official documentation](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
+> 1. **Install OPP Agent and SCIM Server** using the [Okta official documentation](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
 > 2. **Use the SQL files** in the [`sql/`](sql/) directory to populate your database with tables, stored procedures, and test data
 > 3. **Follow the configuration guide** in [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md) for step-by-step Okta Admin Console setup
 > 4. **Use the SCIM Server technical documentation** in [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md) for advanced reference on API endpoints and troubleshooting
@@ -42,6 +42,8 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 - [Makefile Commands](#️-makefile-commands)
 - [Troubleshooting](#-troubleshooting)
 - [Security & Production Considerations](#-security--production-considerations)
+  - [Deployment Architecture Options](#deployment-architecture-options)
+  - [For Production Deployments](#for-production-deployments)
 - [Using Different Databases](#-using-different-databases)
 - [Resources](#-resources)
 - [License](#-license)
@@ -62,6 +64,8 @@ The Okta Generic Database Connector (JDBC) allows Okta to connect to on-premises
 
 It works as an additional component (SCIM Server) that integrates with the Okta On-Premises Provisioning Agent to facilitate secure communication between Okta and the on-premises database.
 
+> 💡 **Multi-Database Support**: A single OPP Agent and SCIM Server can connect to **up to 8 different databases** simultaneously. This allows you to manage users and entitlements across multiple database systems from a single on-premises infrastructure. Each database connection is configured as a **separate Generic Database Connector application instance** in Okta.
+
 ### What is the Okta On-Premises Provisioning Agent?
 
 The Okta On-Premises Provisioning (OPP) Agent acts as a secure bridge between Okta's cloud identity platform and your on-premises applications. It enables:
@@ -74,6 +78,8 @@ The Okta On-Premises Provisioning (OPP) Agent acts as a secure bridge between Ok
 ### What is the Okta On-prem SCIM Server?
 
 The Okta On-prem SCIM Server is a Java-based application that translates SCIM API calls from the OPP Agent into database operations using JDBC. It serves as the intermediary layer that allows Okta to manage user accounts in your on-premises database through the SCIM protocol.
+
+> 💡 **Deployment Flexibility**: The OPP Agent and SCIM Server can be installed on the **same server** (common for most deployments) or on **separate servers** for enhanced isolation. This lab uses separate Docker containers to simulate a production-like architecture, but co-locating both components on a single server is fully supported and recommended for small to medium organizations.
 
 ### How they works together
 
@@ -95,6 +101,8 @@ This Docker Compose environment includes four separate containers:
 2. **Okta On-Prem SCIM Server (okta-scim)**: Translates SCIM requests to database operations
 3. **MariaDB (db)**: Sample database for testing provisioning with pre-populated test data
 4. **DBGate**: Web-based database management interface
+
+> 📢 **Note**: This lab uses **separate containers** for the OPP Agent and SCIM Server to demonstrate a distributed architecture. In production, you can install both on the **same server**, which is the typical deployment model for most organizations.
 
 ### Architecture
 
@@ -693,6 +701,29 @@ make restart
 >
 > ⚠️ **Warning**: 🐳 **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
 
+### Deployment Architecture Options
+
+When deploying to production, you have flexibility in how to architect your environment:
+
+#### Single Server Deployment
+
+- **Install both OPP Agent and SCIM Server on the same host**
+- Simpler infrastructure and management
+- Lower operational costs
+- Adequate security for most use cases
+- The OPP Agent communicates with SCIM Server via localhost
+- This is the **most common production deployment model**
+
+#### Multi-Server Deployment
+
+- Install OPP Agent and SCIM Server on separate hosts
+- Enhanced security through physical/virtual separation
+- Ability to scale components independently
+- Useful for high-availability configurations
+- May be required for specific compliance requirements
+
+> 💡 **Lab Architecture Note**: This Docker lab uses separate containers to demonstrate how the components interact. This simulates a multi-server deployment but is primarily for educational purposes. In production, co-locating both on a single server is fully supported and commonly preferred.
+
 ### For Production Deployments
 
 - **Supported Operating Systems**: Use supported OS for OPP Agent and SCIM Server
@@ -735,30 +766,41 @@ For other databases (Oracle, SQL Server, etc.):
 
 **Note**: MySQL Connector/J 9.6.0 is automatically downloaded from Maven Central during build. All `.jar` files in `./docker/okta-scim/packages/` are copied to `/opt/OktaOnPremScimServer/userlib/` during container build.
 
+### Connecting to Multiple Databases
+
+A single OPP Agent and SCIM Server deployment can manage **up to 8 databases simultaneously**:
+
+- Each database requires a separate Generic Database Connector application instance in Okta
+- All databases can be different types (e.g., MySQL, PostgreSQL, Oracle, SQL Server)
+- Useful for managing users across multiple applications, environments (prod/staging), or organizational units
+- All JDBC drivers must be present in `./docker/okta-scim/packages/` before building the container or in `/opt/OktaOnPremScimServer/userlib/` if you are not using this Docker setup.
+
+For detailed configuration instructions, see [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md).
+
 ---
 
 ## 📚 Resources
-
-### Official Documentation
-
-- [On-premises Connector for Generic Databases](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)
-- [Install the Okta Provisioning Agent](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)
-- [Install the Okta On-prem SCIM Server](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
 
 ### Technical Documentation
 
 - **[Okta Provisioning Configuration Guide](doc/Okta_Provisioning_Configuration.md)** - Step-by-step Okta Admin Console setup instructions
 - **[Okta SCIM Server Technical Documentation](doc/Okta_SCIM_Server.md)** - Advanced technical reference for the SCIM Server's internal architecture, API endpoints, and troubleshooting (*reverse-engineered, educational purposes only*)
 
+### Official Documentation
+
+- **[On-premises Connector for Generic Databases](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)**
+- **[Install the Okta Provisioning Agent](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm)**
+- **[Install the Okta On-prem SCIM Server](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)**
+
 ### SCIM Protocol
 
 - [SCIM 2.0 RFC 7644](https://datatracker.ietf.org/doc/html/rfc7644)
 - [Okta SCIM Documentation](https://developer.okta.com/docs/concepts/scim/)
 
-### Community
+### Okta Community
 
 - [Okta Developer Forums](https://devforum.okta.com/)
-- [Okta Community](https://support.okta.com/community/)
+- [Okta Community](https://support.okta.com/help/s/community?language=en_US)
 
 ---
 
