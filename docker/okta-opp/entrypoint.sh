@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Author: Fabio Grasso <fabio.grasso@okta.com>
+# Author: Fabio Grasso <iam@fabiograsso.net>
 # Version: 1.0.0
 # License: Apache-2.0
 # Description: Entrypoint docker script to for the Okta OPP Agent
