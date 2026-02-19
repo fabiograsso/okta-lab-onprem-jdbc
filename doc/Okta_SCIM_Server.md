@@ -740,19 +740,19 @@ Database connection details are provided in the `X-OKTA-ONPREM-DATA` header on e
 
 ### JVM Tuning
 
-**For small workloads** (< 100 users):
+**For small workloads**:
 
 ```bash
 JAVA_OPTS="-Xmx1024m -Xms512m -XX:+UseG1GC"
 ```
 
-**For medium workloads** (100-1000 users):
+**For medium workloads**:
 
 ```bash
 JAVA_OPTS="-Xmx2048m -Xms1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
 ```
 
-**For large workloads** (1000+ users):
+**For large workloads**:
 
 ```bash
 JAVA_OPTS="-Xmx4096m -Xms2048m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ParallelRefProcEnabled"
