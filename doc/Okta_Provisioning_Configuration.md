@@ -327,25 +327,25 @@ Create a new user in the database when assigned in Okta.
   - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
   - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
   - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
-  - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-  - Parameter 7: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-  - Parameter 8: `DATABASE_FIELD` → `NICKNAME` (optional)
-  - Parameter 9: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-  - Parameter 10: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-  - Parameter 11: `DATABASE_FIELD` → `CITY` (optional)
-  - Parameter 12: `DATABASE_FIELD` → `STATE` (optional)
-  - Parameter 13: `DATABASE_FIELD` → `ZIPCODE` (optional)
-  - Parameter 14: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-  - Parameter 15: `DATABASE_FIELD` → `TIMEZONE` (optional)
-  - Parameter 16: `DATABASE_FIELD` → `ORGANIZATION` (optional)
-  - Parameter 17: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-  - Parameter 18: `DATABASE_FIELD` → `MANAGERID` (optional)
-  - Parameter 19: `DATABASE_FIELD` → `MANAGER` (optional)
-  - Parameter 20: `DATABASE_FIELD` → `TITLE` (optional)
-  - Parameter 21: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
-  - Parameter 22: `DATABASE_FIELD` → `HIREDATE` (optional)
-  - Parameter 23: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-  - Parameter 24: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
+  - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME`
+  - Parameter 7: `DATABASE_FIELD` → `DISPLAYNAME`
+  - Parameter 8: `DATABASE_FIELD` → `NICKNAME`
+  - Parameter 9: `DATABASE_FIELD` → `MOBILEPHONE`
+  - Parameter 10: `DATABASE_FIELD` → `STREETADDRESS`
+  - Parameter 11: `DATABASE_FIELD` → `CITY`
+  - Parameter 12: `DATABASE_FIELD` → `STATE`
+  - Parameter 13: `DATABASE_FIELD` → `ZIPCODE`
+  - Parameter 14: `DATABASE_FIELD` → `COUNTRYCODE`
+  - Parameter 15: `DATABASE_FIELD` → `TIMEZONE`
+  - Parameter 16: `DATABASE_FIELD` → `ORGANIZATION`
+  - Parameter 17: `DATABASE_FIELD` → `DEPARTMENT`
+  - Parameter 18: `DATABASE_FIELD` → `MANAGERID`
+  - Parameter 19: `DATABASE_FIELD` → `MANAGER`
+  - Parameter 20: `DATABASE_FIELD` → `TITLE`
+  - Parameter 21: `DATABASE_FIELD` → `EMPLOYEENUMBER`
+  - Parameter 22: `DATABASE_FIELD` → `HIREDATE`
+  - Parameter 23: `DATABASE_FIELD` → `TERMINATIONDATE`
+  - Parameter 24: `DATABASE_FIELD` → `PASSWORD_HASH`
 
 💡 **What it does:** Inserts a new row into the USERS table with all user attributes. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
@@ -380,25 +380,25 @@ Update existing user attributes in the database.
   - Parameter 3: `DATABASE_FIELD` → `FIRSTNAME` **(required)**
   - Parameter 4: `DATABASE_FIELD` → `LASTNAME` **(required)**
   - Parameter 5: `DATABASE_FIELD` → `EMAIL` **(required)**
-  - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME` (optional)
-  - Parameter 7: `DATABASE_FIELD` → `DISPLAYNAME` (optional)
-  - Parameter 8: `DATABASE_FIELD` → `NICKNAME` (optional)
-  - Parameter 9: `DATABASE_FIELD` → `MOBILEPHONE` (optional)
-  - Parameter 10: `DATABASE_FIELD` → `STREETADDRESS` (optional)
-  - Parameter 11: `DATABASE_FIELD` → `CITY` (optional)
-  - Parameter 12: `DATABASE_FIELD` → `STATE` (optional)
-  - Parameter 13: `DATABASE_FIELD` → `ZIPCODE` (optional)
-  - Parameter 14: `DATABASE_FIELD` → `COUNTRYCODE` (optional)
-  - Parameter 15: `DATABASE_FIELD` → `TIMEZONE` (optional)
-  - Parameter 16: `DATABASE_FIELD` → `ORGANIZATION` (optional)
-  - Parameter 17: `DATABASE_FIELD` → `DEPARTMENT` (optional)
-  - Parameter 18: `DATABASE_FIELD` → `MANAGERID` (optional)
-  - Parameter 19: `DATABASE_FIELD` → `MANAGER` (optional)
-  - Parameter 20: `DATABASE_FIELD` → `TITLE` (optional)
-  - Parameter 21: `DATABASE_FIELD` → `EMPLOYEENUMBER` (optional)
-  - Parameter 22: `DATABASE_FIELD` → `HIREDATE` (optional)
-  - Parameter 23: `DATABASE_FIELD` → `TERMINATIONDATE` (optional)
-  - Parameter 24: `DATABASE_FIELD` → `PASSWORD_HASH` (optional)
+  - Parameter 6: `DATABASE_FIELD` → `MIDDLENAME`
+  - Parameter 7: `DATABASE_FIELD` → `DISPLAYNAME`
+  - Parameter 8: `DATABASE_FIELD` → `NICKNAME`
+  - Parameter 9: `DATABASE_FIELD` → `MOBILEPHONE`
+  - Parameter 10: `DATABASE_FIELD` → `STREETADDRESS`
+  - Parameter 11: `DATABASE_FIELD` → `CITY`
+  - Parameter 12: `DATABASE_FIELD` → `STATE`
+  - Parameter 13: `DATABASE_FIELD` → `ZIPCODE`
+  - Parameter 14: `DATABASE_FIELD` → `COUNTRYCODE`
+  - Parameter 15: `DATABASE_FIELD` → `TIMEZONE`
+  - Parameter 16: `DATABASE_FIELD` → `ORGANIZATION`
+  - Parameter 17: `DATABASE_FIELD` → `DEPARTMENT`
+  - Parameter 18: `DATABASE_FIELD` → `MANAGERID`
+  - Parameter 19: `DATABASE_FIELD` → `MANAGER`
+  - Parameter 20: `DATABASE_FIELD` → `TITLE`
+  - Parameter 21: `DATABASE_FIELD` → `EMPLOYEENUMBER`
+  - Parameter 22: `DATABASE_FIELD` → `HIREDATE`
+  - Parameter 23: `DATABASE_FIELD` → `TERMINATIONDATE`
+  - Parameter 24: `DATABASE_FIELD` → `PASSWORD_HASH`
 
 💡 **What it does:** Updates the USERS table record matching the USER_ID with new attribute values. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory; all other fields are optional and can be NULL.
 
