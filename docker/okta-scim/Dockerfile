@@ -14,6 +14,7 @@ COPY packages/ /packages/
 
 # Install necessary packages and update CA certificates if custom certificates are provided
 RUN \
+    microdnf install -y ca-certificates libXt openssl hostname procps java-25-openjdk-headless && \ 
     mkdir -p /packages/ && \
     shopt -s nullglob nocaseglob && \
     for cert in /packages/*.pem /packages/*.crt; do \
@@ -27,7 +28,6 @@ RUN \
             }; \
         fi; \
     done && \
-    microdnf install -y ca-certificates libXt openssl hostname procps java-25-openjdk-headless && \ 
     microdnf clean all && \
     rm -rf /var/cache/yum /var/cache/dnf && \
     rm -rf /tmp/* /var/tmp/* && \

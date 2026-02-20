@@ -14,6 +14,7 @@ COPY packages/ /packages/
 
 # Install necessary packages and update CA certificates if custom certificates are provided
 RUN \
+    microdnf install -y ca-certificates libXt openssl hostname procps && \
     shopt -s nullglob nocaseglob && \
     for cert in /packages/*.pem /packages/*.crt; do \
         if [ -f "$cert" ]; then \
@@ -27,7 +28,6 @@ RUN \
         fi; \
     done && \
     shopt -u nullglob nocaseglob && \
-    microdnf install -y ca-certificates libXt openssl hostname procps && \
     microdnf clean all && \
     rm -rf /var/cache/yum /var/cache/dnf && \
     rm -rf /tmp/* /var/tmp/* && \
