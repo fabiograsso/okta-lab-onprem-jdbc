@@ -12,12 +12,7 @@ ARG OKTA_EULA_ACCEPT=true
 
 COPY packages/ /packages/
 
-# Install necessary packages and update CA certificates if custom certificates are provided
-RUN \
-    microdnf install -y ca-certificates libXt openssl hostname procps java-25-openjdk-headless && \ 
-    mkdir -p /packages/ && \
-    shopt -s nullglob nocaseglob && \
-    for cert in /packages/*.pem /packages/*.crt; do \
+RUN for cert in /packages/*.pem /packages/*.crt; do \
         if [ -f "$cert" ]; then \
             echo "🔐 Custom certificate found: $(basename "$cert"), updating CA trust..." && \
             cp -f "$cert" /etc/pki/ca-trust/source/anchors/ && \
@@ -27,7 +22,13 @@ RUN \
                 exit 1; \
             }; \
         fi; \
-    done && \
+    done
+
+# Install necessary packages and update CA certificates if custom certificates are provided
+RUN \
+    microdnf install -y ca-certificates libXt openssl hostname procps java-25-openjdk-headless && \ 
+    mkdir -p /packages/ && \
+    shopt -s nullglob nocaseglob && \
     microdnf clean all && \
     rm -rf /var/cache/yum /var/cache/dnf && \
     rm -rf /tmp/* /var/tmp/* && \
