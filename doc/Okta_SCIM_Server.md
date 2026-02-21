@@ -6,34 +6,32 @@
 >
 > **This document is NOT official Okta documentation.**
 >
-> The information contained in this document has been obtained through **reverse engineering and analysis of the Okta On-Prem SCIM Server JAR file** using automated code analysis tools (*Claude Code*). The content is provided for **educational and learning purposes only**.
+> The information contained in this document has been obtained through **reverse engineering and analysis of the Okta On-Prem SCIM Server JAR file**. The content is provided for **educational and learning purposes only**.
 >
-> ### Important
+> - **No Official Documentation**: Okta does not publish official API documentation or technical specifications for the On-Prem SCIM Server's internal workings.
 >
-> 1. **No Official Documentation**: Okta does not publish official API documentation or technical specifications for the On-Prem SCIM Server's internal workings.
+> - **Unsupported Use**: The **ONLY officially supported way** to use the Okta On-Prem SCIM Server is:
+>   - Through the **Okta Provisioning Agent (OPP Agent)**
+>   - Via configuration in the **Okta Admin Console**
+>   - Following official Okta documentation and guidelines
 >
-> 2. **Unsupported Use**: The **ONLY officially supported way** to use the Okta On-Prem SCIM Server is:
->    - Through the **Okta Provisioning Agent (OPP Agent)**
->    - Via configuration in the **Okta Admin Console**
->    - Following official Okta documentation and guidelines
+> - **Direct API Access Not Supported**: Directly calling the SCIM Server APIs documented here is **not supported by Okta** and should only be done for:
+>   - Educational purposes
+>   - Testing and debugging in lab environments
+>   - Understanding the system architecture
+>   - Troubleshooting with Okta Support guidance
 >
-> 3. **Direct API Access Not Supported**: Directly calling the SCIM Server APIs documented here is **not supported by Okta** and should only be done for:
->    - Educational purposes
->    - Testing and debugging in lab environments
->    - Understanding the system architecture
->    - Troubleshooting with Okta Support guidance
+> - **Use at Your Own Risk**: Any use of this information outside of the officially supported methods is at your own risk and may:
+>   - Void support agreements
+>   - Cause unexpected behavior
+>   - Break with future updates
+>   - Introduce security vulnerabilities
 >
-> 4. **Use at Your Own Risk**: Any use of this information outside of the officially supported methods is at your own risk and may:
->    - Void support agreements
->    - Cause unexpected behavior
->    - Break with future updates
->    - Introduce security vulnerabilities
+> - **Official Documentation**: Always refer to official Okta documentation:
+>   - [Install the Okta On-prem SCIM Server](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
+>   - [On-premises Connector for Generic Databases](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)
 >
-> 5. **Official Documentation**: Always refer to official Okta documentation:
->    - [Install the Okta On-prem SCIM Server](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
->    - [On-premises Connector for Generic Databases](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)
->
-> **By reading this document, you acknowledge that this information is for learning purposes only and that you > will use the Okta On-Prem SCIM Server only through officially supported methods in production environments.**
+> **By reading this document, you acknowledge that this information is for learning purposes only and that you will use the Okta On-Prem SCIM Server only through officially supported methods in production environments.**
 
 ---
 
@@ -48,14 +46,13 @@
 - [Configuration](#configuration)
 - [Logging and Debugging](#logging-and-debugging)
 - [Database Connectivity](#database-connectivity)
-- [Performance Tuning](#performance-tuning)
 - [Related Documentation](#related-documentation)
 
 ---
 
 ## Overview
 
-The Okta On-Prem SCIM Server is a **Spring Boot 3.5.0** application that implements the SCIM 2.0 protocol for provisioning users, groups, and entitlements to on-premises databases. It acts as a bridge between Okta's cloud provisioning service and your local database infrastructure.
+The Okta On-Prem SCIM Server is a **Spring Boot 3.5.0** application that implements the SCIM 2.0 protocol for provisioning users, groups, and entitlements to on-premises databases. It acts as a bridge between **Okta's cloud**, the *On-Premise Provisioning (OPP) Agent* and your *local database* infrastructure.
 
 ### Key Characteristics
 
@@ -63,7 +60,7 @@ The Okta On-Prem SCIM Server is a **Spring Boot 3.5.0** application that impleme
 - **Main Class**: `com.okta.server.scim.ScimServerApplication`
 - **Launcher**: `org.springframework.boot.loader.launch.JarLauncher` (Spring Boot fat JAR)
 - **JAR Location**: `data/okta-scim/conf/OktaOnPremScimServer-<version>.jar`
-- **Default Port**: 1443 (HTTPS)
+- **Default Port**: `1443` (HTTPS)
 - **Base Context Path**: `/ws/rest`
 - **Protocol**: HTTPS only (TLS 1.2, TLS 1.3)
 
@@ -116,7 +113,7 @@ Located in `BOOT-INF/classes/com/okta/server/scim/controller/`:
 | Controller | Purpose | Base Path |
 | ---------- | ------- | --------- |
 | `UserController.java` | User CRUD operations | `/{app}/scim/v2/Users` |
-| `GroupController.java` | Group operations | `/{app}/scim/v2/Groups` |
+| `GroupController.java` | Group operations (not used for the Database Connector) | `/{app}/scim/v2/Groups` |
 | `EntitlementController.java` | Entitlement management | `/{app}/scim/v2/Entitlements` |
 | `StatusController.java` | Health check | `/{app}/scim/v2/Status` |
 | `ServiceProviderConfigController.java` | SCIM capabilities | `/{app}/scim/v2/ServiceProviderConfig` |
@@ -129,7 +126,7 @@ Located in `BOOT-INF/classes/com/okta/server/scim/controller/`:
 Located in `BOOT-INF/classes/com/okta/server/scim/connector/jdbc/`:
 
 - **DataSource Management**: HikariCP connection pooling
-- **Executor**: Stored procedure execution engine
+- **Executor**: Stored procedure and SQL queries execution engine
 - **Service Layer**: Workflow orchestration for SCIM operations
 - **Configuration**: Dynamic connector configuration via properties
 
@@ -178,10 +175,10 @@ curl -k -H "Authorization: Bearer d5307740c879491cedecf70c2225776b" \
 
 #### Important Notes
 
-1. **Case Sensitive**: The word "Bearer" must be capitalized
-2. **Space Required**: There must be exactly one space between "Bearer" and the token
-3. **Token Length**: 32 characters (hex string)
-4. **Rotation**: To change the token, modify the properties file and restart the SCIM server
+1. **Case Sensitive**: The word `Bearer` must be capitalized
+2. **Space Required**: There must be exactly one space between `Bearer` and the token
+3. **Length**: 32 characters (hex string)
+4. **Rotation**: To change the token, modify the properties file and restart the SCIM server. You will need also to update the configuration of the Generic Database Connector Application in Okta
 
 ---
 
@@ -200,7 +197,7 @@ Where:
 - `{host}`: SCIM server hostname (e.g., `okta-scim` or `localhost`)
 - `{port}`: SCIM server port (default: `1443`)
 - `{app}`: Application/connector name (e.g., `jdbc_on_prem`)
-- `{resource}`: SCIM resource type (`Users`, `Groups`, `Entitlements`, etc.)
+- `{resource}`: SCIM resource type (`Users`, `Entitlements`, etc.)
 
 In addition to the **[Authentication header (Bearer Token)](#authentication)**, these endpoints require the **[X-OKTA-ONPREM-DATA header](#x-okta-onprem-data-header)**, as described in the dedicated section.
 
@@ -286,20 +283,6 @@ Content-Type: application/json
 ```
 
 **Response**: 200 OK with updated SCIM User resource
-
-### Group Operations
-
-**Base Path**: `{app}/scim/v2/Groups`
-
-#### List Groups
-
-```http
-GET /{app}/scim/v2/Groups
-Authorization: Bearer {token}
-X-OKTA-ONPREM-DATA: {base64_encoded_config}
-```
-
-**Response**: SCIM ListResponse with group resources
 
 ### Entitlement Operations
 
@@ -391,8 +374,8 @@ Content-Length: 27
 **Use Cases**:
 
 - Docker health checks
-- Load balancer health probes
-- Monitoring systems (Nagios, Prometheus, etc.)
+- Monitoring systems (Nagios, Prometheus, Zabbix, etc.)
+- Load balancer checks
 - Startup validation scripts
 
 ---
@@ -402,6 +385,8 @@ Content-Length: 27
 ### Purpose
 
 The `X-OKTA-ONPREM-DATA` header is a **custom HTTP header** that contains the **connector configuration** required for SCIM operations. It's automatically added by the **Okta Provisioning Agent** when forwarding requests to the SCIM server.
+
+It permits to use a single SCIM Server to manage multiple database systems.
 
 ### Contents
 
@@ -495,7 +480,7 @@ curl -k \
   https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/Users
 ```
 
-**Note**: The actual header format and schema may vary by connector type and version. Always refer to Okta documentation and support for the correct configuration when using the agent in production.
+**Note**: The actual header format and schema may vary by connector version. Always refer to Okta documentation and support for the correct configuration when using the agent in production.
 
 ---
 
@@ -732,48 +717,6 @@ Database connection details are provided in the `X-OKTA-ONPREM-DATA` header on e
   "password": "oktademo",
   "driverClassName": "com.mysql.cj.jdbc.Driver"
 }
-```
-
----
-
-## Performance Tuning
-
-### JVM Tuning
-
-**For small workloads**:
-
-```bash
-JAVA_OPTS="-Xmx1024m -Xms512m -XX:+UseG1GC"
-```
-
-**For medium workloads**:
-
-```bash
-JAVA_OPTS="-Xmx2048m -Xms1024m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
-```
-
-**For large workloads**:
-
-```bash
-JAVA_OPTS="-Xmx4096m -Xms2048m -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:+ParallelRefProcEnabled"
-```
-
-### HikariCP Tuning
-
-**For high throughput**:
-
-```properties
-app.datasource.hikari.maximumPoolSize=20
-app.datasource.hikari.minimumIdle=5
-app.datasource.hikari.connectionTimeout=30000
-```
-
-**For low latency**:
-
-```properties
-app.datasource.hikari.maximumPoolSize=10
-app.datasource.hikari.minimumIdle=2
-app.datasource.hikari.connectionTimeout=5000
 ```
 
 ---

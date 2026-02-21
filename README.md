@@ -144,6 +144,12 @@ Before starting, ensure you have:
 - **Okta Organization** with administrative access
 - **Required Files** downloaded (see below)
 
+### Early Access Feature
+
+Since at the moment the **Okta Generic Database Connector** is an Early Access feature, you need to enable it in the Okta Admin Panel → Features → Enable the **Okta Generic Database Connector**.
+
+![TODO](placeholder.png)
+
 ### Required Files
 
 The project now uses separate directories for OPP Agent and SCIM Server packages:
@@ -152,14 +158,14 @@ The project now uses separate directories for OPP Agent and SCIM Server packages
 
 | File | Required | Description | Download |
 | ---- | -------- | ----------- | -------- |
-| `OktaProvisioningAgent-*.rpm` | Yes | OPP Agent installer | [Download from Okta](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/opp-install-agent.htm) |
+| `OktaProvisioningAgent-<version>.x86_64.rpm` | Yes | OPP Agent installer | From the Okta Admin Console → Settings → Downloads → **Okta Provisioning Agent x64 RPM** |
 | `*.pem` or `*.crt` (certificates) | No | Custom VPN certificates | Copy your VPN provider root CA |
 
 **For SCIM Server** - Place in `./docker/okta-scim/packages/`:
 
 | File | Required | Description | Download |
 | ---- | -------- | ----------- | -------- |
-| `OktaOnPremScimServer-*.rpm` | Yes | SCIM Server installer | [Download from Okta](https://help.okta.com/oie/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm) |
+| `OktaOnPremScimServer-<version>.rpm` | Yes | SCIM Server installer | From the Okta Admin Console → Settings → Downloads → **Okta On-prem SCIM Server** |
 | `*.jar` (JDBC drivers) | No | Additional database drivers (optional) | MySQL Connector/J is auto-downloaded. For other databases: [PostgreSQL](https://jdbc.postgresql.org/), [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html), [SQL Server](https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server) |
 | `*.pem` or `*.crt` (certificates) | No | Custom VPN certificates | Copy your VPN provider root CA |
 
@@ -589,6 +595,24 @@ WARNING: No certificate file (.pem or .crt) found
 **This is normal**: The warning indicates the containers will work without custom VPN certificates. Only add certificates if you're connecting through a VPN with custom CAs (e.g., Prisma Access, GlobalProtect).
 
 **If you need certificates**: Place `*.pem` or `*.crt` files in both `./docker/okta-opp/packages/` and `./docker/okta-scim/packages/`
+
+### Build error `SSL peer certificate or SSH remote key was not OK`
+
+If you see an error like this during build:
+
+```txt
+5.091 (microdnf:7): librepo-WARNING **: 10:36:12.616: LRO_METALINKURL processing failed: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.centos.org/metalink?repo=centos-extras-sig-extras-common-9-stream&arch=x86_64&protocol=https,http [SSL certificate problem: self-signed certificate in certificate chain]
+5.092 error: cannot update repo 'extras-common': Cannot prepare internal mirrorlist: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.centos.org/metalink?repo=centos-extras-sig-extras-common-9-stream&arch=x86_64&protocol=https,http [SSL certificate problem: self-signed certificate in certificate chain]; Last error: Curl error (60): SSL peer certificate or SSH remote key was not OK for https://mirrors.centos.org/metalink?repo=centos-extras-sig-extras-common-9-stream&arch=x86_64&protocol=https,http [SSL certificate problem: self-signed certificate in certificate chain]
+```
+
+it means the build process cannot access the CentOS package repositories due to SSL interception. You're probably behind a corporate proxy or VPN that performs SSL inspection.
+
+Solutions:
+
+1. **Add proxy configuration to Docker**: Configure Docker to use your proxy settings, including any necessary CA certificates. See [Docker documentation on configuring proxies](https://docs.docker.com/network/proxy/).
+2. **Add CA certificates to build**: If your proxy uses a custom CA, add the CA certificate to the build context and configure the Dockerfile to trust it during the build process.
+    - You can copy the `.pem` or `.crt` files to the `./docker/okta-opp/packages/` and `./docker/okta-scim/packages/` directories, the build process will copy them automatically to the trust root of the image.
+3. **Use a different network**: If possible, try building the images on a different network that doesn't have SSL interception (e.g., home network).
 
 ### Enabling Database Query Logging
 

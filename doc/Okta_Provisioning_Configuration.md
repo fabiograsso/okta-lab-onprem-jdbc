@@ -57,7 +57,7 @@ Before configuring the provisioning operations, you need to create the Generic D
    - Navigate to **Applications** → **Browse App Catalog**
 
 2. **Search for Generic Database Connector**
-   - In the search box, type **"Generic Database Connector"**
+   - In the search box, type **"Generic Database"**
    - Select **"On-prem connector for Generic Databases"** from the results
 
 3. **Add the Integration**
@@ -66,8 +66,7 @@ Before configuring the provisioning operations, you need to create the Generic D
    ![Click Add Integration button to add the Generic Database Connector application](img/okta-add-integration-button.png)
 
 4. **Configure Application Label**
-   - Provide a name for the application in the **Application Label** field
-   - Default name: "Generic Database Connector"
+   - Provide a name for the application in the **Application Label** field (Default name: "Generic Database Connector")
    - Check "Do not display application icon to users"
    - Click **Next**
 
@@ -93,8 +92,8 @@ Before configuring the provisioning operations, you need to create the Generic D
    ![Click Enable Provisioning button to start provisioning configuration](img/okta-enable-provisioning-button.png)
 
 8. **Select OPP Agent**
-   - Select your registered Okta Provisioning Agent `okta-opp` from the list
    - This page displays all available Okta Provisioning Agents (both active and inactive) in your Okta org
+   - Select your registered Okta Provisioning Agent `okta-opp` from the list
    - Click **Next**
 
    ![Select the okta-opp provisioning agent from available agents list](img/okta-select-opp-agent.png)
@@ -103,27 +102,28 @@ Before configuring the provisioning operations, you need to create the Generic D
    - Enter the **SCIM Hostname**: `okta-scim` (must match the container name for internal connectivity)
    - Enter the **API Token** with the `Bearer` prefix (from SCIM Server credentials)
      - Example: `Bearer d5307740c879491cedecf70c2225776b`
+
+     - > 🔑 **IMPORTANT**: When configuring the Okta application, you **MUST** add the `Bearer` prefix before the token value, with a space between `Bearer` and the token.
    - Click **Add Files** under **Public Key**
-   - Upload the certificate file (`.crt`) from `./data/okta-scim/certs/OktaOnPremScimServer-*.crt`
+   - Upload the certificate file (`.crt`) from the host system `./data/okta-scim/certs/OktaOnPremScimServer-*.crt`
+      - Or save in a `.crt` or `.pem` file the certificate extacted with the command:
+
+         ```bash
+         docker compose exec okta-scim bash -c 'cat /opt/OktaOnPremScimServer/certs/OktaOnPremScimServer-*.crt'
+         ```
+
    - Click **Next**
 
-   > 🔑 **IMPORTANT**: When configuring the Okta application, you **MUST** add the `Bearer` prefix before the token value.
-   >
-   > Example: If the token is `da655feabd8ec0c3f89c1fb6e9f0ad39`, you must enter:
-   > `Bearer da655feabd8ec0c3f89c1fb6e9f0ad39`
-   >
-   > The SCIM Hostname should be: `okta-scim` (the hostname matches the container name)
-
-   ![Configure SCIM server hostname, bearer token, and upload public key certificate](img/okta-scim-server-connection-config.png)
+      ![Configure SCIM server hostname, bearer token, and upload public key certificate](img/okta-scim-server-connection-config.png)
 
 10. **Configure Database Connection**
-    - Provide the database connection details:
-      - **Username**: `oktademo` (or from your `.env` file)
-      - **Password**: `oktademo` (or from your `.env` file)
-      - **Type of Database**: Select **MySQL**
-      - **IP/Domain Name**: `db` (Docker container name)
+    - Provide the database connection details (change them if you are not using the default values in your `.env` file):
+      - **Username**: `oktademo`
+      - **Password**: `oktademo`
+      - **Type of Database**: Select `MySQL`
+      - **IP/Domain Name**: `db` (must match the container name for internal connectivity)
       - **Port**: `3306`
-      - **Database Name**: `oktademo` (or from your `.env` file)
+      - **Database Name**: `oktademo`
       - Add the following additional key/value pair in the **Database Property: Configuration of Key-Value Pairs** section:
         - Key: `allowMultiQueries`
         - Value: `true`
@@ -137,9 +137,9 @@ Before configuring the provisioning operations, you need to create the Generic D
 
 12. **Connection Success**:  Once the connection is successful, you'll be directed to the **Integration** tab of the **Provisioning** section. From here, you can proceed to configure Schema Discovery & Import and Provisioning operations.
 
-### Multi-Database Support
-
-A single OPP Agent and SCIM Server can connect to **up to 8 different databases** simultaneously. This allows you to manage users and entitlements across multiple database systems from a single on-premises infrastructure. Each database connection is configured as a **separate Generic Database Connector application instance** in Okta.
+> ### 💡 Multi-Database Support
+>
+> A single OPP Agent and SCIM Server can connect to **up to 8 different databases** simultaneously. This allows you to manage users and entitlements across multiple database systems from a single on-premises infrastructure. Each database connection is configured as a **separate Generic Database Connector application instance** in Okta.
 
 ---
 
@@ -416,7 +416,7 @@ Update existing user attributes in the database.
 
 #### 7. Activate User
 
-Activate a user account (set IS_ACTIVE = 1).
+Activate a user account.
 
 **Configuration:**
 
@@ -442,7 +442,7 @@ Activate a user account (set IS_ACTIVE = 1).
 
 #### 8. Deactivate User
 
-Deactivate a user account (set IS_ACTIVE = 0).
+Deactivate a user account.
 
 **Configuration:**
 
@@ -476,7 +476,7 @@ Assign an entitlement to a user.
 - Option 1 - Select **SQL Statement**, and enter the SQL query:
 
    ```sql
-   INSERT INTO USERENTITLEMENTS (USER_ID, ENT_ID, ASSIGNEDDATE) VALUES (?, ?, NOW())
+   INSERT INTO USERENTITLEMENTS (USER_ID, ENT_ID) VALUES (?, ?)
    ```
 
 - Option 2 - Select **Stored Procedure** (Recommended), and enter the stored procedure call:
@@ -522,7 +522,7 @@ Revoke an entitlement from a user.
 
 ## Configure User Lifecycle Management
 
-The Generic Database Connector application provides a set of features to maintain user lifecycle between Okta and your database. This section explores the options available to configure and streamline provisioning.
+The Generic Database Connector application provides a set of features to maintain user lifecycle between Okta and your database. This section explores the options available to configure and streamline automatic provisioning and deprovisioning of users.
 
 ### Add Custom Attributes to Application User Profile
 
@@ -537,7 +537,7 @@ Before enabling provisioning configurations, you need to update the attributes f
 
 2. **Select Generic Database Connector User Profile**
    - Search for **"Generic Database Connector"**
-   - Select the profile named **"Generic Database Connector User"**
+   - Individuate the profile named **"Generic Database Connector User"** and click **Mappings**.
 
    ![Select Generic Database Connector User profile in Okta Profile Editor](img/okta-profile-editor-selection.png)
 
@@ -557,6 +557,7 @@ Before enabling provisioning configurations, you need to update the attributes f
      - `ext_MANAGER`
      - `ext_TITLE`
      - And any other custom attributes (you can click the first checkbox to select all)
+     - You can click the first box at the top to select all
    - Click **Save**
 
    ![Select and import database attributes into application user profile](img/okta-import-database-attributes.png)
@@ -582,7 +583,7 @@ This mapping governs how user accounts from the database are imported into Okta.
 1. **Navigate to Mappings**
    - Within the **Generic Database Connector User** profile, click **Mappings**
 
-   ![Click Mappings button to configure attribute mapping between profiles](img/okta-mappings-button.png)
+      ![Click Mappings button to configure attribute mapping between profiles](img/okta-mappings-button.png)
 
 2. **Configure Import Mappings**
    - By default, **Generic Database Connector User to Okta User** is selected
@@ -689,6 +690,7 @@ The Generic Database Connector provides functionality to import users from the d
    - Click **Save**
 
 ![Configure import schedule and username format for database imports](img/okta-import-schedule-configuration.png)
+> TODO Rifare screenshot
 
 #### Execute Manual Import
 
@@ -734,6 +736,18 @@ After configuring import settings, you can manually import users from the databa
 
 After configuring the provisioning operations, you can verify that entitlements are syncing correctly between Okta and your database.
 
+1. **Check entitlement in Okta app profile**:
+   - Click the **Governance** tab
+   - Click **Entitlements**
+   - Verify that the entitlements from the database are listed in Okta
+
+      ![View all entitlements imported from database in Governance tab](img/okta-governance-entitlements-tab.png)
+
+   - Notes:
+      - At the moment only the **Display Name** and **Value Name** of the entitlement are supported. The **Description** is not yet included in the list
+      - To define the **Governance Label** refer to the Okta documentation (TODO link)
+      - Despite other application integrated with the Okta Governance, at the moment the Database Connector **support only one entitlement type** per each application instance.
+
 1. **Check user entitlements**:
    - Click on the three dots next to the user you just imported in the **Assignments** tab
    - Click **View access details**
@@ -744,20 +758,13 @@ After configuring the provisioning operations, you can verify that entitlements 
 
       ![View user entitlements and access permissions synced from database](img/okta-user-entitlements-view.png)
 
-2. **Check entitlement assignment in database**:
-   - Click the **Governance** tab
-   - Click **Entitlements**
-   - Verify that the entitlements from the database are listed in Okta
-
-      ![View all entitlements imported from database in Governance tab](img/okta-governance-entitlements-tab.png)
-
 ---
 
 ## Testing
 
 Now that the Generic Database Connector application is integrated and configured, you can test its capabilities.
 
-### Test Case 1: Manual User Assignment
+### Test #1: Manual User Assignment
 
 In this test, an Okta Administrator assigns a user to the Generic Database Connector application and grants entitlements. The user should be created in the database with the assigned entitlements reflected.
 
@@ -775,8 +782,7 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
 
 3. **Review User Details**
    - The application auto-populates custom attribute values based on your mappings
-   - Review and adjust values as needed
-   - Empty fields can be manually entered
+   - Review and adjust values as needed - Empty fields can be manually entered
    - Click **Assign and Continue**  
 
    ![Okta assign user to app form showing custom attribute values and continue button](img/okta-assign-user-to-app-form.png)
@@ -785,6 +791,7 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
    - In the **Select Assignment** section, select **Custom Values** from the **Entitlement assignment method**  dropdown
    - Under **Entitlements**, select desired entitlements (e.g., "VPN Access", "GitHub Admin")
    - Click **Save**
+   (TODO SCREENSHOT)
 
 5. **Verify in Okta**
    - The user should now appear under the **Assignments** tab
@@ -822,7 +829,7 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
 
 ---
 
-### Test Case 2: User Attribute Update
+### Test #2: User Attribute Update
 
 Test that attribute changes in Okta are synchronized to the database.
 
@@ -830,29 +837,24 @@ Test that attribute changes in Okta are synchronized to the database.
 
 1. **Update User in Okta**
    - Navigate to **Directory** → **People**
-   - Find and select the user
+   - Find and select a user (e.g., `testuser@example.com`)
    - Click **Profile** → **Edit**
    - Change an attribute (e.g., `title`, `department`)
    - Click **Save**
 
-2. **Trigger Push to Application**
-   - Navigate to **Applications** → **Generic Database Connector** → **Assignments**
-   - Find the user and click the menu button
-   - Select **Push now** (if available) or wait for automatic sync
-
-3. **Verify in Database**
+2. **Verify in Database**
    - Check that changes were synced:
 
      ```bash
      docker compose exec db mariadb -u oktademo -poktademo oktademo \
-       -e "SELECT USER_ID, TITLE, EMAIL FROM USERS WHERE EMAIL='testuser@example.com';"
+       -e "SELECT USER_ID, TITLE, DEPARTMENT, EMAIL FROM USERS WHERE EMAIL='testuser@example.com';"
      ```
 
      You can also verify with DBGate UI, by opening the `USERS` table.
 
 ---
 
-### Test Case 3: User Deactivation
+### Test #3: User Deactivation
 
 Test that unassigning a user from the application deactivates them in the database.
 
@@ -876,7 +878,7 @@ Test that unassigning a user from the application deactivates them in the databa
 
 ---
 
-### Test Case 4: Import Users from Database
+### Test #4: Import Users from Database
 
 Test importing existing users from the database into Okta.
 
@@ -925,17 +927,23 @@ Test importing existing users from the database into Okta.
 
       You can also verify with DBGate UI, by opening the `USERENTITLEMENTS` table.
 
-### Monitor Logs
+---
 
-Check logs for any errors:
+### Test #5 Check Okta and local logs
 
-```bash
-# SCIM Server logs
-tail -f ./data/okta-scim/logs/*.log
+To better understand the process and the link between all the component, you can also check the Okta and local logs.
 
-# OPP Agent logs
-tail -f ./data/okta-opp/logs/*.log
-```
+#### Okta Logs
+
+(TODO)
+
+#### OPP Agent Logs
+
+You will find the OPP Agent logs mounted in the local folder `./data/okta-opp/logs/*.log`
+
+#### SCIM Server Logs
+
+You will find the SCIM server logs mounted in the local folder `./data/okta-scim/logs/*.log`
 
 ---
 
@@ -944,7 +952,9 @@ tail -f ./data/okta-opp/logs/*.log
 Once you have the Generic Database Connector set up, you can explore additional use cases such as:
 
 - **Entitlements Policies**: Define policies in Okta to govern how entitlements are assigned based on user attributes (e.g., department, location). Documentation: [Okta Help - Create an Entitlement Policy](https://help.okta.com/oie/en-us/content/topics/governance/policies/entitlement-policy-create.htm).
+
 - **Access Requests**: Use Okta's Access Request feature to allow users to request entitlements, with approval workflows and automated provisioning. Documentation: [Okta Help - Access Requests](https://help.okta.com/oie/en-us/content/topics/governance/access-requests.htm).
+
 - **Access Certification Campaigns**: Implement one time or periodic access reviews for entitlements to ensure compliance and recertification. Documentation: [Okta Help - Access Certification](https://help.okta.com/oie/en-us/content/topics/governance/access-certification.htm).
 
 ---
@@ -1008,16 +1018,16 @@ All stored procedures are defined in `sql/stored_proc.sql`:
 | --------- | ---------- | ------- |
 | `GET_ACTIVEUSERS()` | None | Retrieve all active users (all fields) |
 | `GET_ALL_ENTITLEMENTS()` | None | Retrieve all entitlements |
-| `GET_USER_BY_ID(p_user_id)` | p_user_id VARCHAR(100) | Get specific user details (all fields) |
-| `GET_USER_ENTITLEMENT(p_user_id)` | p_user_id VARCHAR(100) | Get user's entitlements with username |
-| `CREATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Create new user with all fields |
-| `UPDATE_USER(...)` | 29 parameters (5 mandatory + 24 optional) | Update existing user with all fields |
-| `ACTIVATE_USER(p_user_id)` | p_user_id VARCHAR(100) | Activate user account |
-| `DEACTIVATE_USER(p_user_id)` | p_user_id VARCHAR(100) | Deactivate user account |
+| `GET_USER_BY_ID(p_user_id)` | p_user_id | Get specific user details (all fields) |
+| `GET_USER_ENTITLEMENT(p_user_id)` | p_user_id | Get user's entitlements with username |
+| `CREATE_USER(...)` | Various | Create new user with all fields |
+| `UPDATE_USER(...)` | Various | Update existing user with all fields |
+| `ACTIVATE_USER(p_user_id)` | p_user_id | Activate user account |
+| `DEACTIVATE_USER(p_user_id)` | p_user_id | Deactivate user account |
 | `ADD_ENTITLEMENT_TO_USER(...)` | p_user_id, p_ent_id | Assign entitlement |
 | `REMOVE_ENTITLEMENT_FROM_USER(...)` | p_user_id, p_ent_id | Revoke entitlement |
 
-**Note**: CREATE_USER and UPDATE_USER procedures support all 30 user fields. Only USER_ID, USERNAME, FIRSTNAME, LASTNAME, and EMAIL are mandatory. All other fields are optional and can be passed as NULL.
+**Note**: `CREATE_USER` and `UPDATE_USER` procedures support all user fields. Only `USER_ID`, `USERNAME`, `FIRSTNAME`, `LASTNAME`, and `EMAIL` are mandatory. All other fields are optional and can be passed as NULL.
 
 ```mermaid
 ---
@@ -1083,7 +1093,7 @@ flowchart TB
 
 ### Common Issues
 
-#### ValidationException: executeCall not allowed / execute not allowed**
+#### ValidationException: executeCall not allowed / execute not allowed
 
 If you see this error:
 
@@ -1100,23 +1110,23 @@ The operation is configured as "**SQL Statement**" instead of "**Execute Stored 
 2. Navigate to the Provisioning tab → To App / To Okta → Edit
 3. For each operation that calls a stored procedure, ensure **Operation Type** is set to **"Execute Stored Procedure"** (NOT "SQL Statement")
 
-#### Stored Procedure Not Found**
+#### Stored Procedure Not Found
 
 - Verify procedures are installed: `docker compose exec db mariadb -u oktademo -poktademo oktademo -e "SHOW PROCEDURE STATUS WHERE Db='oktademo';"`
 - Reinitialize database if needed (see README.md)
 
-#### Parameter Mismatch**
+#### Parameter Mismatch
 
 - Ensure parameter count matches the stored procedure definition
 - Check parameter types (DATABASE_FIELD, CURSOR, etc.)
 - Review `sql/stored_proc.sql` for exact signatures
 
-#### Connection Timeout**
+#### Connection Timeout
 
 - Verify SCIM server is running: `docker compose ps okta-scim`
 - Check database connectivity: `docker compose exec okta-scim mysql -h db -u oktademo -poktademo oktademo -e "SELECT 1;"`
 
-#### Entitlement Operations Failing**
+#### Entitlement Operations Failing
 
 - Verify ENT_ID exists: `SELECT * FROM ENTITLEMENTS;`
 - Check foreign key constraints
@@ -1140,13 +1150,15 @@ Enable debug logging in SCIM Server:
 
 ## Additional Resources
 
-- [Generic Database Connector Documentation](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)
-- [Okta SCIM Server Technical Documentation](../doc/Okta_SCIM_Server.md) - Advanced technical reference for SCIM Server internals (*reverse-engineered, educational purposes only*)
-- [Stored Procedures Source](../sql/stored_proc.sql)
-- [Database Schema](../sql/init.sql)
 - [Project README](../README.md)
 - [Quick Start Guide](../QUICKSTART.md)
+- [Stored Procedures Source](../sql/stored_proc.sql)
+- [Database Schema](../sql/init.sql)
+- [Generic Database Connector Okta Documentation](https://help.okta.com/oie/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm)
+- [Okta SCIM Server Technical Documentation](../doc/Okta_SCIM_Server.md) - Advanced technical reference for SCIM Server internals (*reverse-engineered, educational purposes only*)
+- [Okta Identity Governance Documentation](https://help.okta.com/oie/en-us/content/topics/governance/)
+- [Okta Lifecycle Management Documentation](https://help.okta.com/oie/en-us/content/topics/provisioning)
 
 ---
 
-**Note**: This configuration is designed for the lab environment. For production deployments, review and adjust stored procedures according to your security and compliance requirements.
+**Note**: This configuration is designed for the lab environment. For production deployments, review and adjust stored procedures and all the configurations according to your security and compliance requirements.
