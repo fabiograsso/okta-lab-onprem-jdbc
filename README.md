@@ -146,9 +146,9 @@ Before starting, ensure you have:
 
 ### Early Access Feature
 
-Since at the moment the **Okta Generic Database Connector** is an Early Access feature, you need to enable it in the Okta Admin Panel → Features → Enable the **Okta Generic Database Connector**.
+Since at the moment the **Okta Generic Database Connector** is an Early Access feature, you need to enable it in the Okta Admin Panel → Features → Enable the **OPP Agent with SCIM 2.0 support** and **On-prem Connector for Generic Databases** features.
 
-![TODO](placeholder.png)
+![OPP Agent with SCIM 2.0 support and On-prem Connector for Generic Databases Early Access Features](./doc/img/on-prem-connector-feature.png)
 
 ### Required Files
 

@@ -690,7 +690,6 @@ The Generic Database Connector provides functionality to import users from the d
    - Click **Save**
 
 ![Configure import schedule and username format for database imports](img/okta-import-schedule-configuration.png)
-> TODO Rifare screenshot
 
 #### Execute Manual Import
 
@@ -745,7 +744,7 @@ After configuring the provisioning operations, you can verify that entitlements 
 
    - Notes:
       - At the moment only the **Display Name** and **Value Name** of the entitlement are supported. The **Description** is not yet included in the list
-      - To define the **Governance Label** refer to the Okta documentation (TODO link)
+      - To define the **Governance Label** refer to the [Okta documentation for Resource labels](https://help.okta.com/oie/en-us/content/topics/identity-governance/resource-labels/resource-labels.htm)
       - Despite other application integrated with the Okta Governance, at the moment the Database Connector **support only one entitlement type** per each application instance.
 
 1. **Check user entitlements**:
@@ -791,7 +790,8 @@ In this test, an Okta Administrator assigns a user to the Generic Database Conne
    - In the **Select Assignment** section, select **Custom Values** from the **Entitlement assignment method**  dropdown
    - Under **Entitlements**, select desired entitlements (e.g., "VPN Access", "GitHub Admin")
    - Click **Save**
-   (TODO SCREENSHOT)
+
+   ![Okta assign entitlements to user](img/okta-assign-entitlements-to-user.png)
 
 5. **Verify in Okta**
    - The user should now appear under the **Assignments** tab
@@ -935,7 +935,16 @@ To better understand the process and the link between all the component, you can
 
 #### Okta Logs
 
-(TODO)
+You can check the Okta System Logs to see the events related to user provisioning and entitlement management. Look for events such as:
+
+1. **User's entitlements updated successfully** (`resource.user_entitlements.update`): This event indicates that a user's entitlements were updated in Okta, which should trigger the provisioning flow to sync changes to the database.
+2. **Push new user to external application** (`application.provision.user.push`): This event indicates that Okta is attempting to provision a new user to the database via the OPP Agent.
+3. **Successfully pushed new user account to app"** (`app.user_management.push_new_user_success`): This event confirms that the user account was successfully created in the database, and the entitlements were assigned.
+4. **Sync user in external application** (`application.provision.user.sync`): This event indicates that Okta is attempting to sync user changes to the database, which can be triggered by attribute updates or entitlement changes.
+
+![Okta logs](img/okta-logs.png)
+
+Even if they aren't verbose, these logs can help you understand when provisioning actions are triggered and if they succeed or fail. And you can use them to get the timestamp of an event and correlate it with the OPP Agent and SCIM server logs.
 
 #### OPP Agent Logs
 

@@ -12,6 +12,7 @@ ARG OKTA_EULA_ACCEPT=true
 
 COPY packages/ /packages/
 
+# Update CA trust if custom certificates are provided in the /packages directory
 RUN for cert in /packages/*.pem /packages/*.crt; do \
         if [ -f "$cert" ]; then \
             echo "🔐 Custom certificate found: $(basename "$cert"), updating CA trust..." && \
