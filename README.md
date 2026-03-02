@@ -362,8 +362,6 @@ The following procedures are available for SCIM operations with support for all 
 10. `REMOVE_ENTITLEMENT_FROM_USER(...)` - Revoke entitlement from user
 
 > 💡 **Tip**: The database also includes 6 operational views (V_USERENTITLEMENTS, V_ACTIVE_USERS, V_INACTIVE_USERS, V_ENTITLEMENT_USAGE, V_USER_HIERARCHY, V_INACTIVE_USERENTITLEMENTS) for convenient monitoring and reporting queries.
->
-> 📖 **Reference**: These stored procedures are based on the Oracle examples from Appendix A of the Generic Database Connector documentation, adapted for MySQL/MariaDB.
 
 ### OPP Agent Configuration
 

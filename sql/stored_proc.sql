@@ -1,6 +1,5 @@
 -- ============================================================================
 -- MySQL Stored Procedures for Okta Generic Database Connector
--- Based on Oracle procedures from Appendix A
 -- ============================================================================
 
 DELIMITER $$
