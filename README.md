@@ -7,6 +7,8 @@ A Docker-based laboratory environment for testing Okta's On-Premises Provisionin
 
 > 🚀 **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for very fast setup instructions.
 >
+> 🔗 Blog article: [Okta On-premises Connector for Generic Databases: A Complete Guide](https://iam.fabiograsso.net/posts/howto/okta-generic-jdbc-connector/)
+>
 > ⚠️ **Warning**: 🐳 **Docker** is not officially supported by Okta to run the OPP Agent and SCIM Server in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
 >
 > 📢 **Note**: This lab environment is designed for testing and demonstration purposes. For production deployments, consult the [official Okta documentation](https://help.okta.com/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm).
@@ -143,6 +145,12 @@ Before starting, ensure you have:
 - **Docker Desktop** or **Docker Engine** with Docker Compose v2+
 - **Okta Organization** with administrative access
 - **Required Files** downloaded (see below)
+
+> 📌 **Tested version**
+> This lab was built and tested with the following versions:
+>
+> - Okta Provisioning Agent: 03.00.07
+> - Okta On-prem SCIM Server: 1.7.0
 
 ### Early Access Feature
 

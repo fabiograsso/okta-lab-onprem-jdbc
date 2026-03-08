@@ -27,6 +27,7 @@ RUN for cert in /packages/*.pem /packages/*.crt; do \
 
 # Install necessary packages and update CA certificates if custom certificates are provided
 RUN \
+    microdnf update -y && \
     microdnf install -y ca-certificates libXt openssl hostname procps && \
     shopt -s nullglob nocaseglob && \
     shopt -u nullglob nocaseglob && \
