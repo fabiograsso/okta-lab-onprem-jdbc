@@ -1,0 +1,46 @@
+services:
+  # MariaDB Database 
+  db:
+    image: mariadb:11
+    volumes:
+      - ./data/mysql:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d/:ro
+    healthcheck:
+      test: /usr/bin/mariadb-admin ping -h 127.0.0.1 -u $$MARIADB_USER --password=$$MARIADB_PASSWORD
+      start_period: 30s
+      start_interval: 1s
+    env_file: .env
+
+  # DBGate UI
+  dbgate:
+    image: "dbgate/dbgate:latest"
+    ports:
+      - "8090:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      - CONNECTIONS=${MARIADB_DATABASE}
+      - LABEL_${MARIADB_DATABASE}=${MARIADB_DATABASE}
+      - SERVER_${MARIADB_DATABASE}=db
+      - USER_${MARIADB_DATABASE}=root
+      - PASSWORD_${MARIADB_DATABASE}=${MARIADB_ROOT_PASSWORD}
+      - PORT_${MARIADB_DATABASE}=${MARIADB_PORT:-3306}
+      - ENGINE_${MARIADB_DATABASE}=mysql@dbgate-plugin-mysql
+
+  # Okta On-Prem SCIM Agent
+  okta-scim:
+    build:
+      context: ./docker/okta-scim
+      args:
+        CUSTOMER_ID: ${CUSTOMER_ID}
+    hostname: okta-scim
+    volumes:
+      - ./data/okta-scim/logs:/var/log/OktaOnPremSCIMAgent/
+      - ./data/okta-scim/conf:/etc/OktaOnPremSCIMAgent/
+      - ./data/okta-scim/certs/:/opt/OktaOnPremSCIMAgent/certs/
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file: .env
+    platform: linux/amd64 # Workaround for compatibility with MacOS

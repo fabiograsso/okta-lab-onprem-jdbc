@@ -1,0 +1,15 @@
+.env
+.DS_Store
+.claude
+.vscode
+data/
+*.rpm
+*.jar
+*.pem
+*.crt
+*.log
+*.credentials
+doc/Lab/
+*.ldif
+*temp*/
+*tmp*/
