@@ -32,13 +32,10 @@ services:
   okta-scim:
     build:
       context: ./docker/okta-scim
-      args:
-        CUSTOMER_ID: ${CUSTOMER_ID}
     hostname: okta-scim
     volumes:
       - ./data/okta-scim/logs:/var/log/OktaOnPremSCIMAgent/
       - ./data/okta-scim/conf:/etc/OktaOnPremSCIMAgent/
-      - ./data/okta-scim/certs/:/opt/OktaOnPremSCIMAgent/certs/
     depends_on:
       db:
         condition: service_healthy

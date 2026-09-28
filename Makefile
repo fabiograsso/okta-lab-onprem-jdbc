@@ -63,7 +63,7 @@ kill:
 
 configure:
 	@echo "--> Launching Okta On-Prem SCIM Agent configuration script..."
-	@docker compose exec okta-scim /opt/OktaOnPremSCIMAgent/configure_agent.sh
+	@docker compose exec okta-scim /opt/OktaOnPremSCIMAgent/bin/configure_agent.sh
 
 check-prereqs:
 	@echo ""
@@ -92,9 +92,9 @@ check-build-prereqs:
 	@echo ""
 	@echo "--> Checking build prerequisites..."
 	@$(MAKE) check-docker
-	@if ! ls ./docker/okta-scim/packages/OktaOnPremSCIMAgent-*.rpm 1>/dev/null 2>&1; then \
+	@if ! ls ./docker/okta-scim/packages/OktaOnPremScimServer-*.rpm 1>/dev/null 2>&1; then \
 		echo "\033[0;31m  [x] ERROR: Okta On-Prem SCIM Agent RPM not found!\033[0m"; \
-		echo "Please place the OktaOnPremSCIMAgent-*.rpm file in the './docker/okta-scim/packages/' directory."; \
+		echo "Please place the OktaOnPremScimServer-*.rpm file in the './docker/okta-scim/packages/' directory."; \
 		exit 1; \
 	else \
 		echo "\033[0;32m  [✔] Okta On-Prem SCIM Agent RPM found\033[0m"; \

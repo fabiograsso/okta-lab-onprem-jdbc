@@ -38,7 +38,16 @@ This lab environment uses stored procedures to handle these operations, providin
 
 Before configuring Okta provisioning, ensure:
 
-1. ✅ Okta On-Prem SCIM Agent is running and connected to Okta
+1. ✅ In the Okta Admin Console, go to **Settings** → **Features** and enable:
+   - **On-prem Connector for Generic Databases**
+   - **Enable the Okta On-Premises SCIM Agent** (dependency: On-prem Connector for Generic Databases)
+
+     ![Enable the Okta On-Premises SCIM Agent feature toggle](img/okta-enable-scim-agent-feature.png)
+
+   - *(optional)* **Enable Incremental Import for On-prem Connector for Generic Databases provisioning** (dependency: the SCIM Agent feature above) — for more efficient sync of user data instead of always doing a full import
+
+     ![Enable Incremental Import feature toggle](img/okta-enable-incremental-import-feature.png)
+
 2. ✅ Database is initialized with schema and stored procedures (from `sql/init.sql` and `sql/stored_proc.sql`)
 
 ## Create Generic Database Connector Application
@@ -86,25 +95,34 @@ Before configuring the provisioning operations, you need to create the Generic D
 
    ![Click Enable Provisioning button to start provisioning configuration](img/okta-enable-provisioning-button.png)
 
-8. **Select the On-Prem SCIM Agent**
-   - This page displays all available registered Okta On-Prem SCIM Agents (both active and inactive) in your Okta org
-   - Select your registered agent `okta-scim` from the list
-   - Click **Next**
+8. **Add the On-Prem SCIM Agent**
+   - The **"Set up Okta On-prem SCIM Server"** step lists any already-registered agents. On a fresh setup, you'll see **"No operational agents"**
+   - Click **"+ Add first agent"**
 
-9. **Configure SCIM Agent Connection**
-   - Enter the **SCIM Hostname**: `okta-scim` (must match the container name for internal connectivity)
-   - > 📢 **TODO**: Confirm whether an API token/bearer token field is still required by the new consolidated On-Prem SCIM Agent, or whether registration is now fully handled by `configure_agent.sh`. Update this step once verified against the real agent.
-   - Click **Add Files** under **Public Key**
-   - Upload the certificate file (`.crt`) from the host system `./data/okta-scim/certs/OktaOnPremSCIMAgent-*.crt`
-      - Or save in a `.crt` or `.pem` file the certificate extacted with the command:
+      ![No operational agents yet, click Add first agent](img/okta-add-first-agent.png)
 
-         ```bash
-         docker compose exec okta-scim bash -c 'cat /opt/OktaOnPremSCIMAgent/certs/OktaOnPremSCIMAgent-*.crt'
-         ```
+   - Select **For Linux (x64 RPM)** to see the install command:
 
-   - Click **Next**
+      ```bash
+      sudo INSTALL_MODE=agent yum localinstall OktaOnPremScimServer-<version>.rpm
+      ```
 
-      ![Configure SCIM agent hostname and upload public key certificate](img/okta-scim-server-connection-config.png)
+     This lab's Dockerfile already performs the equivalent RPM install as part of `make build` — you don't need to run this manually. The package name is unchanged from the legacy `OktaOnPremScimServer` RPM even though it installs the new consolidated agent.
+
+      ![Add agent panel showing the RPM install command](img/okta-agent-list-before-select.png)
+
+9. **Register the Agent**
+   - On the machine/container running the agent, run the registration script (in this lab: `make configure`)
+   - Unlike the legacy On-Prem SCIM Server, there is **no bearer token and no certificate to generate or upload**. Registration instead uses an OAuth device-code flow:
+
+      ![Terminal output showing the device-code registration flow](img/okta-configure-agent-terminal.png)
+
+   - Enter your Okta org URL when prompted, then open the printed URL in a browser and enter the code to approve the registration
+   - Back in the Admin Console, the agent will appear in the list as **OPERATIONAL** once approved
+
+      ![Agent list showing okta-scim as OPERATIONAL](img/okta-agent-operational-selected.png)
+
+   - Select the agent's checkbox and click **Next**
 
 10. **Configure Database Connection**
     - Provide the database connection details (change them if you are not using the default values in your `.env` file):
@@ -117,15 +135,15 @@ Before configuring the provisioning operations, you need to create the Generic D
       - Add the following additional key/value pair in the **Database Property: Configuration of Key-Value Pairs** section:
         - Key: `allowMultiQueries`
         - Value: `true`
-    - Click **Setup Complete**
+    - Click **Test and finish setup**
 
-      ![Configure MySQL database connection details including credentials and allowMultiQueries property](img/okta-database-connection-config.png)
+      ![Configure MySQL database connection details including credentials and allowMultiQueries property](img/okta-database-connection-config-v2.png)
 
 11. You will see a **Connecting agents...** pop-up for a few seconds.
 
       ![Connecting agents loading popup during provisioning setup](img/okta-connecting-agents-popup.png)
 
-12. **Connection Success**:  Once the connection is successful, you'll be directed to the **Integration** tab of the **Provisioning** section. From here, you can proceed to configure Schema Discovery & Import and Provisioning operations.
+12. **Connection Success**:  Once the connection is successful, you'll be directed to the **Integration** tab of the **Provisioning** section. From here, you can proceed to configure Schema Discovery & Import and Provisioning operations — this part is unchanged from the previous OPP + SCIM Server architecture.
 
 > ### 💡 Multi-Database Support
 >

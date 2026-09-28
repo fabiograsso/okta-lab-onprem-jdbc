@@ -19,8 +19,9 @@ Download from Okta Help Center:
 ### 2. Organize Package Files
 
 ```bash
-# Copy On-Prem SCIM Agent RPM
-cp OktaOnPremSCIMAgent-*.rpm ./docker/okta-scim/packages/
+# Copy On-Prem SCIM Agent RPM (package name is unchanged from the legacy
+# server; it now installs the consolidated agent)
+cp OktaOnPremScimServer-*.rpm ./docker/okta-scim/packages/
 
 # Optional: If using VPN with custom certificates (e.g., PaloAlto GlobalProtect/Prisma Access)
 # cp ../your_path/your_vpn_certificates.pem ./docker/okta-scim/packages/
@@ -43,55 +44,52 @@ make build
 make start-logs
 ```
 
-### 5. Configure the On-Prem SCIM Agent
+### 5. Enable Early Access Features
 
-> 📢 **TODO**: Once the real `OktaOnPremSCIMAgent` RPM is tested, verify and update the exact registration prompts/flow of `configure_agent.sh` below.
+In Okta Admin Console, go to **Settings** → **Features** and enable:
 
-Run the interactive configuration/registration script:
+- **On-prem Connector for Generic Databases**
+- **Enable the Okta On-Premises SCIM Agent**
+- *(optional)* **Enable Incremental Import for On-prem Connector for Generic Databases provisioning**
+
+### 6. Create the App and Add the Agent
+
+1. In Okta Admin Console, go to **Applications** → **Browse App Catalog**
+2. Search for and add **"On-prem connector for Generic Databases"**
+3. In the **Provisioning** tab, click **Enable Provisioning**, then **"+ Add first agent"**
+4. Select **For Linux (x64 RPM)** — this shows the install command:
+
+   ```bash
+   sudo INSTALL_MODE=agent yum localinstall OktaOnPremScimServer-<version>.rpm
+   ```
+
+   This lab's Dockerfile already runs the equivalent `rpm` install — you don't need to run this manually inside the container.
+
+### 7. Register the Agent
+
+Run the interactive registration script:
 
 ```bash
 make configure
 ```
 
-Follow the prompts to connect to your Okta org.
+Follow the prompts: enter your Okta org URL, then open the printed URL in a browser and approve the device code. Once approved, refresh the agent list in the Admin Console — the agent should show as **OPERATIONAL**.
 
-### 6. Retrieve SCIM Agent Credentials
+Select the agent and click **Next**, then configure the database connection:
 
-The agent's details are automatically displayed in the logs. You can also retrieve the public certificate:
+- **Database Type**: MySQL (works with both MySQL and MariaDB)
+- **IP/Domain name**: `db`
+- **Port**: `3306`
+- **Database Name**: `oktademo`
+- **Username**: `oktademo`
+- **Password**: `oktademo`
+- Under **Additional Database Properties**, add key `allowMultiQueries` with value `true`
 
-```bash
-# Get public certificate
-cat ./data/okta-scim/certs/OktaOnPremSCIMAgent-*.crt
-```
+Click **Test and finish setup**.
 
-> 📢 **Note**: Earlier versions of this lab also retrieved a bearer token here. Per Okta's 2026.09.0 release notes, the consolidated agent was built to reduce dependencies, and it's not yet confirmed whether bearer-token auth is still required — **TODO**: verify against the real agent and update this step.
+> Note: Database type should be set to "MySQL" in Okta configuration even though MariaDB is being used, as MariaDB is MySQL-compatible.
 
-### 7. Configure Okta App Integration
-
-1. In Okta Admin Console, go to **Applications** → **Browse App Catalog**
-2. Search for **"On-prem connector for Generic Databases"**
-3. Add the application
-4. In the **Provisioning** tab, configure:
-
-   **SCIM Connection**:
-   - **SCIM Hostname**: `okta-scim`
-   - **Upload Certificate**: Use the `.crt` file from step 6
-   - *(TODO: confirm whether a bearer token field is still present in the app setup with the new agent)*
-
-   **Database Connection**:
-   - **Database Type**: MySQL (works with both MySQL and MariaDB)
-   - **IP/Domain name**: `db`
-   - **Port**: `3306`
-   - **Database Name**: `oktademo`
-   - **Username**: `oktademo`
-   - **Password**: `oktademo`
-
-   > Note: Database type should be set to "MySQL" in Okta configuration even though MariaDB is being used, as MariaDB is MySQL-compatible.
-
-   **Stored Procedures**: See [detailed configuration guide](doc/Okta_Provisioning_Configuration.md) for configuring all 10 stored procedures (import/provisioning operations)
-
-5. Configure attribute mappings
-6. Assign users or groups to the application
+Once connected, the rest of the setup (attribute mappings, stored procedures for import/provisioning, assigning users) is unchanged from previous versions — see the [detailed configuration guide](doc/Okta_Provisioning_Configuration.md).
 
 ### 8. Database Schema
 

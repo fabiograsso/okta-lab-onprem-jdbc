@@ -137,7 +137,11 @@ Before starting, ensure you have:
 
 ### Early Access Feature
 
-Since at the moment the **Okta Generic Database Connector** is an Early Access feature, you need to enable it in the Okta Admin Panel → Features → Enable the **On-prem Connector for Generic Databases** and **Enable the Okta On-Prem SCIM Agent** features.
+Since at the moment the **Okta Generic Database Connector** is an Early Access feature, you need to enable the following in the Okta Admin Console → **Settings** → **Features**:
+
+- **On-prem Connector for Generic Databases**
+- **Enable the Okta On-Premises SCIM Agent** (dependency: On-prem Connector for Generic Databases) — establishes the secure connection between your Okta tenant and on-premises systems, with support for high-availability
+- *(optional)* **Enable Incremental Import for On-prem Connector for Generic Databases provisioning** (dependency: the SCIM Agent feature above) — more efficient sync of user data, instead of always doing a full import
 
 ![On-prem Connector for Generic Databases Early Access Features](./doc/img/on-prem-connector-feature.png)
 
@@ -147,7 +151,7 @@ Place the following in `./docker/okta-scim/packages/`:
 
 | File | Required | Description | Download |
 | ---- | -------- | ----------- | -------- |
-| `OktaOnPremSCIMAgent-<version>.rpm` | Yes | On-Prem SCIM Agent installer | From the Okta Admin Console → Settings → Downloads → **Okta On-prem SCIM Agent**, or see the [install guide](https://help.okta.com/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm) |
+| `OktaOnPremScimServer-<version>.rpm` | Yes | On-Prem SCIM Agent installer (package name is unchanged from the legacy server; it now installs the consolidated agent into `/opt/OktaOnPremSCIMAgent/`) | From the Okta Admin Console → Provisioning setup → **"+ Add first agent"** → **For Linux (x64 RPM)**, or see the [install guide](https://help.okta.com/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm) |
 | `*.jar` (JDBC drivers) | No | Additional database drivers (optional) | MySQL Connector/J is auto-downloaded. For other databases: [PostgreSQL](https://jdbc.postgresql.org/), [Oracle](https://www.oracle.com/database/technologies/appdev/jdbc-downloads.html), [SQL Server](https://learn.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server) |
 | `*.pem` or `*.crt` (certificates) | No | Custom VPN certificates | Copy your VPN provider root CA |
 
@@ -161,7 +165,7 @@ Place the following in `./docker/okta-scim/packages/`:
 
 ```bash
 # Copy On-Prem SCIM Agent Install files to docker/okta-scim/packages/:
-# - OktaOnPremSCIMAgent-*.rpm (required)
+# - OktaOnPremScimServer-*.rpm (required)
 # - *.jar files for additional databases (optional - MySQL Connector/J auto-downloaded)
 # - *.pem or *.crt (optional, for custom VPN)
 ```
@@ -191,35 +195,41 @@ The `make start` command will:
 - Run prerequisite checks
 - Start all containers
 
-### 4. Configure the On-Prem SCIM Agent
+### 4. Register the On-Prem SCIM Agent with Okta
 
-> 📢 **TODO**: Once the real `OktaOnPremSCIMAgent` RPM is available, verify the exact registration flow/prompts of `configure_agent.sh` (values requested, whether it still needs `orgUrl`/`agentId`/`agentKey`) and update this section accordingly.
+Unlike the legacy On-Prem SCIM Server, there's no self-signed certificate or bearer token to generate or upload — the new agent registers with your Okta org via an **OAuth device-code flow**.
 
-Run the interactive configuration/registration script:
+Run the interactive registration script:
 
 ```bash
 make configure
 ```
 
-### 5. Retrieve SCIM Agent Credentials
+You'll see something like:
 
-After the agent starts, its details are automatically displayed in the logs. You can also retrieve them from:
+```txt
+Agent Configuration
 
-#### Option A: From host filesystem
+This script registers the agent with your Okta org.
 
-```bash
-# Public Certificate
-cat ./data/okta-scim/certs/OktaOnPremSCIMAgent-*.crt
+Okta org URL (e.g. https://mycompany.okta.com): https://your-org.okta.com
+
+Enable proxy (y/n)? [n]:
+
+[1/3] Requesting device authorization...
+        Done.
+
+  Open this URL in your browser:
+  https://your-org.okta.com/activate
+
+  Enter this code when prompted:
+  XXXXXXXX
+
+[2/3] Waiting for authorization...
+        (approve in your browser, then this will continue automatically)
 ```
 
-#### Option B: From container
-
-```bash
-# Public Certificate
-docker compose exec okta-scim bash -c 'cat /opt/OktaOnPremSCIMAgent/certs/OktaOnPremSCIMAgent-*.crt'
-```
-
-> 📢 **Note**: Earlier versions of this lab also retrieved a bearer token (`scim.security.bearer.token`) for API authentication. Per Okta's 2026.09.0 release notes, the new consolidated agent was built "to reduce the number of dependencies," and it's not yet confirmed whether bearer-token auth is still used. **TODO**: verify against the real agent and update this section (and [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)) once confirmed.
+Open the URL, enter the code, and approve the registration in the Okta Admin Console. Once approved, the agent starts automatically inside the container.
 
 ---
 
@@ -229,7 +239,7 @@ After completing the local setup, you'll need to configure the Okta Admin Consol
 
 The Okta Generic Database Connector requires configuration in several areas:
 
-1. **Application Integration Setup**: create and configure the Generic Database Connector application in Okta
+1. **Application Integration Setup**: create the Generic Database Connector application in Okta, enable provisioning, then click **"+ Add first agent"**. This shows the RPM + `INSTALL_MODE=agent` install command (see [Required Files](#required-files) above) — once the agent is installed and registered (`make configure`), it shows up here as **OPERATIONAL**. Select it, click **Next**, then configure the database connection (host, port, credentials, `allowMultiQueries=true`) and **Test and finish setup**.
 2. **Attribute Mapping**: map all the user profile fields between Okta and your database, and set up transformation rules if needed
 3. **LCM (LifeCycle Management) Operations**: configure *SQL queries* or *stored procedures* for user lifecycle management (provisioning, deprovisioning, import, update)
 4. **Entitlement Management**: configure how Okta manages user entitlements (roles) in the database (import, assignment, revocation)
@@ -321,23 +331,14 @@ The following procedures are available for SCIM operations with support for all 
 
 ### SCIM Agent Configuration
 
-Agent configuration is automatically generated and stored in `./data/okta-scim/`:
+Registration state and configuration are stored under `./data/okta-scim/conf/`. Unlike the legacy On-Prem SCIM Server, the new agent registers via OAuth device-code flow (`make configure`) and does **not** generate a self-signed certificate or bearer token — there's nothing to upload as a Public Key in the Okta Admin Console.
 
 **Configuration Locations**:
 
-- **Properties**: `./data/okta-scim/conf/config-*.properties` - Spring Boot configuration
-- **Certificates**: `./data/okta-scim/certs/OktaOnPremSCIMAgent-*.crt` - Auto-generated public certificate
-- **Private Keys**: `./data/okta-scim/certs/OktaOnPremSCIMAgent-*.key` - Auto-generated private key
-- **Keystores**: `./data/okta-scim/certs/OktaOnPremSCIMAgent-*.p12` - PKCS12 keystore
+- **Config/registration files**: `./data/okta-scim/conf/` — written by `configure_agent.sh` during `make configure`
 - **Logs**: `./data/okta-scim/logs/` - SCIM Agent application logs
 
-> 📢 **Note**: The agent automatically generates a 4096-bit RSA key pair and self-signed certificate on first startup.
-> The configuration file is overwritten at every restart of the container, so manual changes will not persist. To change the configuration, you can either:
->
-> 1. Update the `docker-compose.yml` to mount a custom configuration file (make sure to include all required properties)
-> 2. Use environment variables to override specific properties (e.g., logging levels)
->
-> 📖 **Advanced**: For detailed technical information about the SCIM Agent's internal architecture, API endpoints, and direct API testing, see [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md).
+> 📖 **Advanced**: For detailed technical information about the SCIM Agent's internal architecture and API endpoints (based on the *legacy* On-Prem SCIM Server — treat as historical reference), see [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md).
 
 ---
 

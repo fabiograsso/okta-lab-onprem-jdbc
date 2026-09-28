@@ -29,7 +29,7 @@ Three Docker services:
 **3. Okta On-Prem SCIM Agent (`okta-scim`)**
 - Image: `quay.io/centos/centos:stream9-minimal` (linux/amd64)
 - Components: Okta On-Prem SCIM Agent, OpenJDK 25, MySQL Connector/J 9.6.0 (auto-downloaded)
-- Volumes: `./data/okta-scim/{logs,conf,certs}`, `./docker/okta-scim/packages` (read-only)
+- Volumes: `./data/okta-scim/{logs,conf}`, `./docker/okta-scim/packages` (read-only)
 - Depends on: `db` health
 
 ## Directory Structure
@@ -45,15 +45,14 @@ Three Docker services:
 ├── data/                         # Persistent data (gitignored)
 │   ├── mysql/                    # MariaDB data files
 │   └── okta-scim/                # SCIM Agent data
-│       ├── conf/                 # SCIM Agent configuration
-│       ├── logs/                 # SCIM Agent logs
-│       └── certs/                # SCIM Agent certificates and keystores
+│       ├── conf/                 # SCIM Agent registration/config files
+│       └── logs/                 # SCIM Agent logs
 ├── docker/                       # Docker build contexts
 │   └── okta-scim/                # SCIM Agent container
 │       ├── Dockerfile            # SCIM Agent image definition
 │       ├── entrypoint.sh         # SCIM Agent startup script
 │       └── packages/             # SCIM Agent packages (not in git)
-│           ├── OktaOnPremSCIMAgent*.rpm
+│           ├── OktaOnPremScimServer*.rpm  # package name unchanged; installs the new consolidated agent
 │           ├── *.jar             # JDBC drivers
 │           └── *.pem/*.crt       # Optional certificates
 └── sql/                          # Database initialization scripts
@@ -64,7 +63,7 @@ Three Docker services:
 ## Required Files (Not in Repository)
 
 **SCIM Agent Files** (`./docker/okta-scim/packages/`):
-1. **OktaOnPremSCIMAgent-*.rpm** (Required) - [Download](https://help.okta.com/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
+1. **OktaOnPremScimServer-*.rpm** (Required) - package name unchanged from the legacy server, installs the new consolidated agent - [Download](https://help.okta.com/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
 2. **JDBC Drivers** (Optional) - `*.jar` files. MySQL Connector/J 9.6.0 auto-downloaded. Additional drivers for MariaDB, PostgreSQL, Oracle, SQL Server supported. All jars copied to `/opt/OktaOnPremSCIMAgent/userlib/`. See [Generic DB Connector docs](https://help.okta.com/en-us/content/topics/provisioning/opc/connectors/on-prem-connector-generic-db.htm).
 3. **CA Certificates** (Optional) - `*.pem` or `*.crt` for custom VPN
 
@@ -121,18 +120,14 @@ MARIADB_DATABASE=oktademo
 ```
 
 **SCIM Agent** (`./data/okta-scim/`):
-Auto-generates configuration on first startup:
-- **config-${CUSTOMER_ID}.properties** - Agent config
-- **customer-id.conf** - Customer ID
-- **jvm.conf** - Java memory and GC settings
-- **Certificates** - 4096-bit RSA cert/key/p12 keystore (10-year validity, self-signed)
+Registers with Okta via an **OAuth device-code flow** run through `make configure` (`configure_agent.sh`): prompts for the Okta org URL, prints a verification URL + code, and completes once approved in the browser. No self-signed certificate, keystore, or bearer token is generated or required — unlike the legacy On-Prem SCIM Server, there's nothing to upload as a "Public Key" in the Okta Admin Console.
+- **Config/registration files** - written to `./data/okta-scim/conf/` by `configure_agent.sh`
 - **Logs** - `/var/log/OktaOnPremSCIMAgent/` → `./data/okta-scim/logs/`
 
-> **TODO:** Confirm whether bearer-token auth (`scim.security.bearer.token`)
-> is still required by the new consolidated agent, and whether
-> `configure_agent.sh` still needs OPP-style registration values (orgUrl,
-> agentId, keys). Update this section and the entrypoint once the real
-> `OktaOnPremSCIMAgent` RPM has been tested. See TODOs in
+> **TODO:** The exact registration marker file(s) `configure_agent.sh` writes
+> (used by the entrypoint to detect "already registered") and the agent's
+> real start command/binary path are still best-effort guesses - confirm
+> against the actual RPM contents. See TODOs in
 > `docker/okta-scim/entrypoint.sh` and `Dockerfile`.
 
 ## Build and Deployment Commands (Makefile)
@@ -172,33 +167,24 @@ Verifies the SCIM Agent RPM (required), JDBC jars (info only), certs (warning on
 
 4. **Start:** `make start-logs` (follows logs, initializes DB)
 
-5. **Configure the SCIM Agent:** `make configure`
+5. **Register the SCIM Agent:** `make configure` (enter org URL, approve device code in browser)
 
-6. **Retrieve credentials:**
-   ```bash
-   cat ./data/okta-scim/certs/OktaOnPremSCIMAgent-*.crt
-   ```
-   Need: hostname=`okta-scim`, cert=.crt file
+6. **Verify:** `docker compose exec db mariadb -u oktademo -poktademo oktademo -e "SELECT COUNT(*) FROM USERS;"` (expect 15)
 
-7. **Verify:** `docker compose exec db mariadb -u oktademo -poktademo oktademo -e "SELECT COUNT(*) FROM USERS;"` (expect 15)
-
-8. **Access DBGate:** http://localhost:8090 (root/oktademo)
+7. **Access DBGate:** http://localhost:8090 (root/oktademo)
 
 ## Container Behavior
 
 **SCIM Agent** (`./docker/okta-scim/entrypoint.sh`):
 1. Display Okta logo
-2. Create cert symlinks
-3. Generate CUSTOMER_ID (if not exists)
-4. Generate 4096-bit RSA cert/key/p12 (10yr validity)
-5. Create Spring Boot config (port 1443, TLS, logging) — TODO: confirm bearer-token config is still relevant
-6. Create JVM config
-7. Copy JDBC jars to userlib
-8. Display credentials
-9. Health check: validates `/ws/rest/jdbc_on_prem/scim/v2/Status` every 5 min
-10. Start agent (foreground)
+2. Create conf/log dirs and set permissions
+3. Wait for registration (polls every 10s for a marker file under `${CONF_DIR}` - TODO: confirm exact marker)
+4. Health check: validates `/ws/rest/jdbc_on_prem/scim/v2/Status` every 5 min
+5. Start agent (foreground)
 
-All config/certs/logs persist to host, survive restarts.
+Registration (`make configure` → `configure_agent.sh`) runs separately/interactively and is not part of this startup sequence — it's what makes the marker file(s) appear.
+
+All config/logs persist to host, survive restarts.
 
 ## Database Access
 
@@ -219,11 +205,10 @@ tail -f ./data/okta-scim/logs/*.log
 **SCIM Agent issues:**
 1. Check logs: `./data/okta-scim/logs/`
 2. Verify JDBC drivers: `./docker/okta-scim/packages/*.jar`
-3. Test endpoint:
+3. Test endpoint (no auth header needed - the new agent doesn't use bearer tokens):
    ```bash
-   curl -i https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/ServiceProviderConfig --insecure
+   curl -ik https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/ServiceProviderConfig
    ```
-   *(TODO: add auth header once the new agent's auth model is confirmed)*
 
 **Database issues:**
 ```bash
@@ -288,8 +273,8 @@ docker compose exec db grep "CALL" /var/log/mysql/general.log
 2. `make rebuild`
 3. Verify: `docker compose exec okta-scim ls -la /opt/OktaOnPremSCIMAgent/userlib/`
 
-**Certificate management:**
-- Auto-updated on start from `./docker/okta-scim/packages/*.{pem|crt}` to `/etc/pki/ca-trust/source/anchors/`
+**Certificate management (VPN CAs only):**
+- Auto-updated at build time from `./docker/okta-scim/packages/*.{pem|crt}` to `/etc/pki/ca-trust/source/anchors/` (for corporate VPN/proxy interception, unrelated to agent auth)
 
 **Schema changes:**
 1. Edit `sql/init.sql` or `sql/stored_proc.sql`
@@ -301,7 +286,7 @@ Note: SQL scripts run only on first init. For existing DBs, apply changes manual
 
 **Security:**
 - Lab passwords only (not production-ready)
-- .env/keystores/certs gitignored
+- .env/rpm/certs gitignored
 
 **Known Issues:**
 - Platform: linux/amd64 (macOS compat, possible ARM perf impact)
@@ -323,8 +308,13 @@ Note: SQL scripts run only on first init. For existing DBs, apply changes manual
 
 ## Key Configuration Notes
 
-**Auth (TODO):**
-The legacy SCIM Server required a bearer token (`Bearer <value>`) in the Okta Admin Console. It's unconfirmed whether the new consolidated agent still uses this model — verify against the real RPM/docs and update this section once confirmed.
+**Auth:**
+The legacy On-Prem SCIM Server required a bearer token (`Bearer <value>`) plus a self-signed certificate uploaded as a "Public Key" in the Okta Admin Console. The new consolidated agent drops both — registration is a one-time OAuth device-code flow (`make configure`), and there's no per-request token or cert involved.
+
+**Early Access feature flags (Settings → Features):**
+- `On-prem Connector for Generic Databases`
+- `Enable the Okta On-Premises SCIM Agent` (depends on the above)
+- `Enable Incremental Import for On-prem Connector for Generic Databases provisioning` (optional, depends on the SCIM Agent flag)
 
 **SCIM Base URL:**
 Use container hostname `okta-scim` (containers on same Docker network)
