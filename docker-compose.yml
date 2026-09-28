@@ -34,8 +34,8 @@ services:
       context: ./docker/okta-scim
     hostname: okta-scim
     volumes:
-      - ./data/okta-scim/logs:/var/log/OktaOnPremSCIMAgent/
-      - ./data/okta-scim/conf:/etc/OktaOnPremSCIMAgent/
+      - ./data/okta-scim/logs:/opt/OktaOnPremSCIMAgent/logs
+      - ./data/okta-scim/conf:/opt/OktaOnPremSCIMAgent/config
     depends_on:
       db:
         condition: service_healthy

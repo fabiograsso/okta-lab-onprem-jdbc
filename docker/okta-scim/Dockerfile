@@ -63,9 +63,13 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
-# Bearer-token auth and the self-signed cert are gone in the new consolidated
-# agent (registration is OAuth device-code based - see entrypoint.sh), so the
-# healthcheck no longer needs a token or CA cert.
-# TODO: verify the exact status endpoint/response text against the real agent.
+# Bearer-token auth is gone in the new consolidated agent (registration is
+# OAuth device-code based - see entrypoint.sh), so the healthcheck no longer
+# needs a token.
+# TODO: this still assumes the merged agent exposes a local HTTPS listener on
+# port 1443 like the legacy SCIM Server did - unconfirmed. The internal
+# OPP<->SCIM Server hop that this port originally served no longer exists now
+# that the two processes are merged, so the port/protocol/endpoint/response
+# text all need verifying against the real agent.
 HEALTHCHECK --start-period=30s --start-interval=1s --interval=300s --timeout=5s \
   CMD curl -k -s -f --max-time 5 --http1.0 https://localhost:1443/ws/rest/jdbc_on_prem/scim/v2/Status 2>/dev/null | grep -q 'running' || exit 1

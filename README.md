@@ -63,6 +63,8 @@ The Okta Generic Database Connector (JDBC) allows Okta to connect to on-premises
 
 > 📢 **Design change (Okta 2026.09.0)**: Okta previously required two separate components — the On-Premises Provisioning (OPP) Agent and a standalone On-Prem SCIM Server. As of the [2026.09.0 release](https://help.okta.com/oie/en-us/content/topics/releasenotes/production.htm), these have been consolidated into a single **Okta On-Prem SCIM Agent**, which "reduces the number of dependencies and allows for new features to be implemented." This lab now deploys only the single consolidated agent.
 >
+> The old version of this Docker-based lab, is still available at [okta-lab-onprem-jdbc-legacy](https://github.com/fabiograsso/okta-lab-onprem-jdbc-legacy) for reference.
+>
 > 💡 **Multi-Database Support**: A single On-Prem SCIM Agent can connect to **up to 8 different databases** simultaneously. This allows you to manage users and entitlements across multiple database systems from a single on-premises infrastructure. Each database connection is configured as a **separate Generic Database Connector application instance** in Okta.
 
 ### What is the Okta On-Prem SCIM Agent?
@@ -197,7 +199,7 @@ The `make start` command will:
 
 ### 4. Register the On-Prem SCIM Agent with Okta
 
-Unlike the legacy On-Prem SCIM Server, there's no bearer token and no certificate to upload as a Public Key — the new agent registers with your Okta org via an **OAuth device-code flow** instead. (The container still generates a self-signed cert locally for the agent's own HTTPS listener, same as before — it's just no longer shared with Okta.)
+Unlike the legacy OPP Agent + On-Prem SCIM Server pair, there's no bearer token and no certificate to generate or upload as a Public Key — the new agent registers with your Okta org via an **OAuth device-code flow** instead. (The old certificate secured the internal hop between the two legacy processes; since they're now merged into one, that hop — and the certificate — no longer applies.)
 
 Run the interactive registration script:
 
@@ -331,12 +333,11 @@ The following procedures are available for SCIM operations with support for all 
 
 ### SCIM Agent Configuration
 
-Registration state and configuration are stored under `./data/okta-scim/conf/`. Unlike the legacy On-Prem SCIM Server, the new agent registers via OAuth device-code flow (`make configure`) and does **not** use a bearer token — there's nothing to upload as a Public Key in the Okta Admin Console. The container still generates a self-signed cert/keystore locally on first startup for the agent's own HTTPS listener.
+Registration state and configuration are stored under `./data/okta-scim/conf/`. Unlike the legacy OPP Agent + On-Prem SCIM Server pair, the new agent registers via OAuth device-code flow (`make configure`) and does **not** use a bearer token or a self-signed certificate — there's nothing to upload as a Public Key in the Okta Admin Console. The legacy cert secured the internal hop between the two separate processes, which no longer exists now that they're merged.
 
 **Configuration Locations**:
 
 - **Config/registration files**: `./data/okta-scim/conf/` — written by `configure_agent.sh` during `make configure`
-- **Certificates**: `./data/okta-scim/conf/certs/` — self-signed cert/key/keystore, auto-generated on first startup
 - **Logs**: `./data/okta-scim/logs/` - SCIM Agent application logs
 
 > 📖 **Advanced**: For detailed technical information about the SCIM Agent's internal architecture and API endpoints (based on the *legacy* On-Prem SCIM Server — treat as historical reference), see [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md).
