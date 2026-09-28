@@ -44,10 +44,8 @@ chmod 755 "${CONF_DIR}" "${LOG_DIR}"
 # ---------- wait for OAuth device-code registration (make configure) ----------
 log "👀 Checking agent registration status..."
 while true; do
-  # TODO: replace this glob with the actual registration marker file(s)
-  # written by configure_agent.sh once confirmed against the real RPM.
-  if ls "${CONF_DIR}"/*.conf >/dev/null 2>&1 || ls "${APP_HOME}"/conf/*.conf >/dev/null 2>&1; then
-    log "✅ Registration files found. Starting the On-Prem SCIM Agent..."
+  if [ -f "${CONF_DIR}/agent-mode.conf" ]; then
+    log "✅ Registration complete. Starting the On-Prem SCIM Agent..."
     break
   fi
   log "⏳ Waiting for agent registration. Run 'make configure' to register with your Okta org..."
@@ -62,6 +60,6 @@ echo ""
 echo "################################################################"
 echo ""
 echo "🚀 Starting the On-Prem SCIM Agent"
-# TODO: verify this binary/script path and name against the real
-# OktaOnPremSCIMAgent RPM contents once available.
-exec "${APP_HOME}/bin/OktaOnPremSCIMAgent" 2>&1
+echo ""
+
+exec "${APP_HOME}/bin/OktaOnPremSCIMAgent.sh" 2>&1
