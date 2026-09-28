@@ -19,9 +19,8 @@ Download from Okta Help Center:
 ### 2. Organize Package Files
 
 ```bash
-# Copy On-Prem SCIM Agent RPM (package name is unchanged from the legacy
-# server; it now installs the consolidated agent)
-cp OktaOnPremScimServer-*.rpm ./docker/okta-scim/packages/
+# Copy On-Prem SCIM Agent RPM
+cp OktaOnPremSCIMAgent-*.rpm ./docker/okta-scim/packages/
 
 # Optional: If using VPN with custom certificates (e.g., PaloAlto GlobalProtect/Prisma Access)
 # cp ../your_path/your_vpn_certificates.pem ./docker/okta-scim/packages/
@@ -60,7 +59,7 @@ In Okta Admin Console, go to **Settings** → **Features** and enable:
 4. Select **For Linux (x64 RPM)** — this shows the install command:
 
    ```bash
-   sudo INSTALL_MODE=agent yum localinstall OktaOnPremScimServer-<version>.rpm
+   sudo INSTALL_MODE=agent yum localinstall OktaOnPremSCIMAgent-<version>.rpm
    ```
 
    This lab's Dockerfile already runs the equivalent `rpm` install — you don't need to run this manually inside the container.

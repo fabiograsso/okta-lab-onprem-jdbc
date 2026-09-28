@@ -35,13 +35,15 @@ RUN \
     find /var/cache -type f -delete
 
 # Install Okta On-Prem SCIM Agent
-# Note: the RPM package itself is still named OktaOnPremScimServer-<version>.rpm
-# (per Okta Admin Console "Add agent" install instructions), even though it
-# installs into /opt/OktaOnPremSCIMAgent/. INSTALL_MODE=agent selects the new
-# consolidated agent install mode (replaces the old CUSTOMER_ID/OKTA_EULA_ACCEPT
-# install-time vars and self-signed cert generation - registration is now done
-# via OAuth device-code flow through configure_agent.sh at runtime).
-RUN INSTALL_MODE=agent rpm -Uvh /packages/OktaOnPremScimServer-*.rpm && \
+# INSTALL_MODE=agent selects the new consolidated agent install mode (per the
+# Okta Admin Console's own "Add agent" install instructions), replacing the
+# old CUSTOMER_ID/OKTA_EULA_ACCEPT install-time vars - registration is now
+# done via OAuth device-code flow through configure_agent.sh at runtime.
+# Note: the Admin Console snippet shows the placeholder filename
+# OktaOnPremScimServer-<version>.rpm, but the actual downloaded package is
+# named OktaOnPremSCIMAgent-<version>.rpm - the glob below matches the real
+# file placed in packages/.
+RUN INSTALL_MODE=agent rpm -Uvh /packages/OktaOnPremSCIMAgent-*.rpm && \
     rm -rf /etc/OktaOnPremSCIMAgent/* && \
     rm -rf /var/log/OktaOnPremSCIMAgent/*
 

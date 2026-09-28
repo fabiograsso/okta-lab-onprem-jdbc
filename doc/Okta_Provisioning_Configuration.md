@@ -104,16 +104,16 @@ Before configuring the provisioning operations, you need to create the Generic D
    - Select **For Linux (x64 RPM)** to see the install command:
 
       ```bash
-      sudo INSTALL_MODE=agent yum localinstall OktaOnPremScimServer-<version>.rpm
+      sudo INSTALL_MODE=agent yum localinstall OktaOnPremSCIMAgent-<version>.rpm
       ```
 
-     This lab's Dockerfile already performs the equivalent RPM install as part of `make build` — you don't need to run this manually. The package name is unchanged from the legacy `OktaOnPremScimServer` RPM even though it installs the new consolidated agent.
+     This lab's Dockerfile already performs the equivalent RPM install as part of `make build` — you don't need to run this manually.
 
       ![Add agent panel showing the RPM install command](img/okta-agent-list-before-select.png)
 
 9. **Register the Agent**
    - On the machine/container running the agent, run the registration script (in this lab: `make configure`)
-   - Unlike the legacy On-Prem SCIM Server, there is **no bearer token and no certificate to generate or upload**. Registration instead uses an OAuth device-code flow:
+   - Unlike the legacy On-Prem SCIM Server, there is **no bearer token and no certificate to upload as a Public Key**. Registration instead uses an OAuth device-code flow:
 
       ![Terminal output showing the device-code registration flow](img/okta-configure-agent-terminal.png)
 
