@@ -298,11 +298,11 @@ The database is automatically initialized on first startup with:
 
 **Schema and Test Data** (`sql/init.sql`):
 
-- **USERS** table: Comprehensive user profiles with fields
+- **USERS** table: Comprehensive user profiles with 25 fields
   - **Identity**: `USER_ID` (PRIMARY KEY), `USERNAME` (UNIQUE), `EMAIL` (NOT NULL)
-  - **Personal**: `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `HONORIFICPREFIX`, `DISPLAYNAME`, `NICKNAME`, `BIRTHDATE`
-  - **Contact**: `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `POSTALADDRESS`, `TIMEZONE`, `EMERGENCYCONTACT`
-  - **Work**: `TITLE`, `DEPARTMENT`, `EMPLOYEENUMBER`, `MANAGER`, `MANAGERID`, `WORKLOCATION`, `COSTCENTER`
+  - **Personal**: `FIRSTNAME`, `LASTNAME`, `MIDDLENAME`, `DISPLAYNAME`, `NICKNAME`
+  - **Contact**: `MOBILEPHONE`, `STREETADDRESS`, `CITY`, `STATE`, `ZIPCODE`, `COUNTRYCODE`, `TIMEZONE`
+  - **Work**: `TITLE`, `ORGANIZATION`, `DEPARTMENT`, `EMPLOYEENUMBER`, `MANAGER`, `MANAGERID`
   - **Dates**: `HIREDATE`, `TERMINATIONDATE`
   - **Security**: `PASSWORD_HASH`, `IS_ACTIVE` (BOOLEAN)
 - **ENTITLEMENTS** table: Access entitlements
@@ -316,12 +316,12 @@ The following procedures are available for SCIM operations with support for all 
 
 1. `GET_ACTIVEUSERS()` - Retrieve all active users with all fields
 2. `GET_USER_BY_ID(p_user_id)` - Query specific user with all fields
-3. `CREATE_USER(...)` - Provision new user (30 parameters)
+3. `CREATE_USER(...)` - Provision new user (24 parameters)
    - **Mandatory**: p_user_id, p_username, p_firstname, p_lastname, p_email
-   - **Optional**: All other fields (can be NULL)
-4. `UPDATE_USER(...)` - Modify existing user (30 parameters)
+   - **Optional**: All other 19 fields (can be NULL)
+4. `UPDATE_USER(...)` - Modify existing user (24 parameters)
    - **Mandatory**: p_user_id, p_username, p_firstname, p_lastname, p_email
-   - **Optional**: All other fields (can be NULL)
+   - **Optional**: All other 19 fields (can be NULL)
 5. `ACTIVATE_USER(p_user_id)` - Set user active
 6. `DEACTIVATE_USER(p_user_id)` - Deactivate user account
 7. `GET_ALL_ENTITLEMENTS()` - List all available entitlements

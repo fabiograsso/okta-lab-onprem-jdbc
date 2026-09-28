@@ -897,12 +897,12 @@ Test importing existing users from the database into Okta.
 
       ```bash
       docker compose exec db mariadb -u oktademo -poktademo oktademo -e \
-         "CALL CREATE_USER('test.import@galaxy.local', 'test.import', 'Test', 'Import', NULL, NULL, 'test.import@galaxy.local', 'Test Import', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'TEST-DEPT', NULL, NULL, NULL, NULL, NULL, NULL, 'Test User', NULL, NULL, NULL, '9999');"
+         "CALL CREATE_USER('test.import@galaxy.local', 'test.import', 'Test', 'Import', 'test.import@galaxy.local', NULL, 'Test Import', NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, 'TEST-DEPT', NULL, NULL, 'Test User', '9999', NULL, NULL, NULL);"
       ```
 
       or add a new line with DBGate UI, by opening the `USERS` table.
 
-      This creates a user with mandatory fields (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL) and a few optional fields (DISPLAYNAME, DEPARTMENT, TITLE, EMPLOYEENUMBER). All other fields are NULL.
+      This creates a user with mandatory fields (USER_ID, USERNAME, FIRSTNAME, LASTNAME, EMAIL) and a few optional fields (DISPLAYNAME, DEPARTMENT, TITLE, EMPLOYEENUMBER). All other fields are NULL. The procedure takes 24 positional parameters in total (see [Stored Procedures Reference](#stored-procedures-reference)); parameters are passed in table-column order: `user_id, username, firstname, lastname, email, middlename, displayname, nickname, mobilephone, streetaddress, city, state, zipcode, countrycode, timezone, organization, department, managerid, manager, title, employeenumber, hiredate, terminationdate, password_hash`.
 
 2. **Run Import**
    - Navigate to **Applications** → **Generic Database Connector** → **Import**
@@ -1062,8 +1062,8 @@ flowchart TB
  subgraph s3["User Lifecycle Operations"]
         DEACTIVATE_USER["DEACTIVATE_USER<br>Input: p_user_id"]
         ACTIVATE_USER["ACTIVATE_USER<br>Input: p_user_id"]
-        UPDATE_USER["UPDATE_USER<br>29 Parameters<br>5 mandatory + 24 optional"]
-        CREATE_USER["CREATE_USER<br>29 Parameters<br>5 mandatory + 24 optional"]
+        UPDATE_USER["UPDATE_USER<br>24 Parameters<br>5 mandatory + 19 optional"]
+        CREATE_USER["CREATE_USER<br>24 Parameters<br>5 mandatory + 19 optional"]
   end
  subgraph s4["Entitlement Management"]
         REMOVE_ENTITLEMENT["REMOVE_ENTITLEMENT_FROM_USER<br>Inputs: p_user_id, p_ent_id"]
