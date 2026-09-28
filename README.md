@@ -233,6 +233,8 @@ Enable proxy (y/n)? [n]:
 
 Open the URL, enter the code, and approve the registration in the Okta Admin Console. Once approved, the agent starts automatically inside the container.
 
+> ⚠️ **Expected error**: after approving the device code, `make configure` will likely exit with `make: *** [configure] Error 137`. This is expected and safe to ignore — Docker isn't an officially supported way to run the agent, and this happens because `configure_agent.sh` isn't designed to be attached to the way this lab attaches to it. Registration still completes successfully. Verify with `docker compose logs -f okta-scim` (or `./data/okta-scim/logs/*.log`), or by checking the agent list in the Okta Admin Console — it should show as **OPERATIONAL**.
+
 ---
 
 ## 🔗 Configure Okta Cloud Integration
@@ -466,6 +468,20 @@ INFO: JDBC driver JAR files not found! The MySQL JDBC driver will be downloaded 
 ```
 
 **Note**: This is informational only. MySQL Connector/J is automatically downloaded during build. You only need to manually add JDBC drivers for other databases (PostgreSQL, Oracle, SQL Server, etc.)
+
+### `make configure` exits with Error 137
+
+```text
+make: *** [configure] Error 137
+```
+
+**This is expected and safe to ignore** if it appears *after* you've already approved the device code in your browser. Docker isn't an officially supported way to run the agent, and `configure_agent.sh` isn't designed to be attached to the way this lab attaches to it. Registration still completes successfully — verify with:
+
+```bash
+docker compose logs -f okta-scim
+```
+
+or by checking the agent list in the Okta Admin Console's provisioning setup — it should show as **OPERATIONAL**.
 
 ### SCIM Agent Connection Failed
 

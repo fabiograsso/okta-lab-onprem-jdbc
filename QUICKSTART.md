@@ -74,6 +74,8 @@ make configure
 
 Follow the prompts: enter your Okta org URL, then open the printed URL in a browser and approve the device code. Once approved, refresh the agent list in the Admin Console — the agent should show as **OPERATIONAL**.
 
+> ⚠️ **Expected error**: after approving the device code, you'll likely see `make: *** [configure] Error 137` in the terminal. This is expected and safe to ignore — Docker isn't an officially supported way to run the agent, and this happens because `configure_agent.sh` doesn't manage the process the way this lab attaches to it. Registration still completes successfully — verify with `docker compose logs -f okta-scim` or by checking the agent list in the Okta Admin Console (it should show as **OPERATIONAL**).
+
 Select the agent and click **Next**, then configure the database connection:
 
 - **Database Type**: MySQL (works with both MySQL and MariaDB)

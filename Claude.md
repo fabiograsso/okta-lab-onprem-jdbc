@@ -231,6 +231,7 @@ make rebuild                        # Rebuild without cache
 
 **Configure command fails:**
 - Start container first: `make start`
+- `make: *** [configure] Error 137` appearing *after* the device code has been approved in the browser is expected and safe to ignore (Docker isn't officially supported for running the agent, and `configure_agent.sh` isn't designed to be attached to the way this lab attaches to it). Verify registration succeeded via `docker compose logs -f okta-scim` or the agent list in the Okta Admin Console (should show **OPERATIONAL**).
 
 ### Database Query Logging
 
