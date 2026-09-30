@@ -10,7 +10,6 @@ LABEL org.opencontainers.image.description="Docker image for Okta On-Prem SCIM A
 
 ARG INSTALL_MODE=agent
 ARG OKTA_EULA_ACCEPT=true
-ARG CUSTOMER_ID
 ARG MYSQL_CONNECTOR_VERSION=9.7.0
 
 COPY packages/ /packages/
