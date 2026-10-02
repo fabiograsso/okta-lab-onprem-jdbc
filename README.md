@@ -7,7 +7,7 @@ A Docker-based laboratory environment for testing Okta's On-Prem SCIM Agent with
 
 > 🚀 **Quick Start**: See [QUICKSTART.md](QUICKSTART.md) for very fast setup instructions.
 >
-> 🔗 Blog article: [Okta On-premises Connector for Generic Databases: A Complete Guide](https://iam.fabiograsso.net/posts/howto/okta-generic-jdbc-connector/)
+> 🔗 Blog article: [Okta On-premises Connector for Generic Databases: A Complete Guide](https://iam.fabiograsso.net/howto/okta-generic-jdbc-connector/)
 >
 > ⚠️ **Warning**: 🐳 **Docker** is not officially supported by Okta to run the On-Prem SCIM Agent in production. Always consult official Okta documentation and support for production deployments. This environment is for testing and demonstration purposes only.
 >
@@ -19,7 +19,6 @@ A Docker-based laboratory environment for testing Okta's On-Prem SCIM Agent with
 > 1. **Install the Okta On-Prem SCIM Agent** using the [Okta official documentation](https://help.okta.com/en-us/content/topics/provisioning/opp/on-prem-scim-install.htm)
 > 2. **Use the SQL files** in the [`sql/`](sql/) directory to populate your database with tables, stored procedures, and test data
 > 3. **Follow the configuration guide** in [doc/Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md) for step-by-step Okta Admin Console setup
-> 4. **Use the SCIM Agent technical documentation** in [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md) for advanced reference on API endpoints and troubleshooting
 
 ---
 
@@ -51,7 +50,6 @@ A Docker-based laboratory environment for testing Okta's On-Prem SCIM Agent with
 - Other documentation files:
   - [Fast Start Guide](QUICKSTART.md) - Fast setup in minutes
   - [Okta Provisioning Configuration Guide](doc/Okta_Provisioning_Configuration.md)
-  - [Okta On-Prem SCIM Agent - Technical Documentation](doc/Okta_SCIM_Server.md)
 
 ---
 
@@ -341,8 +339,6 @@ Registration state and configuration are stored under `./data/okta-scim/conf/`. 
 
 - **Config/registration files**: `./data/okta-scim/conf/` — written by `configure_agent.sh` during `make configure`
 - **Logs**: `./data/okta-scim/logs/` - SCIM Agent application logs
-
-> 📖 **Advanced**: For detailed technical information about the SCIM Agent's internal architecture and API endpoints (based on the *legacy* On-Prem SCIM Server — treat as historical reference), see [doc/Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md).
 
 ---
 
@@ -716,7 +712,6 @@ For detailed configuration instructions, see [doc/Okta_Provisioning_Configuratio
 ### Technical Documentation
 
 - **[Okta Provisioning Configuration Guide](doc/Okta_Provisioning_Configuration.md)** - Step-by-step Okta Admin Console setup instructions
-- **[Okta SCIM Agent Technical Documentation](doc/Okta_SCIM_Server.md)** - Advanced technical reference for the SCIM Agent's internal architecture, API endpoints, and troubleshooting (*reverse-engineered, educational purposes only*)
 
 ### Official Documentation
 

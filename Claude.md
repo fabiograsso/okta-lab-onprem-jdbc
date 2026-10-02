@@ -4,13 +4,13 @@
 
 Docker-based lab environment for the **Okta On-Prem SCIM Agent** with JDBC connectivity. Provides containerized setup for testing and developing Okta provisioning integrations with on-premises databases.
 
-**Project:** okta-lab-onprem-jdbc-v2 | **Author:** Fabio Grasso <iam@fabiograsso.net>
+**Project:** okta-lab-onprem-jdbc | **Author:** Fabio Grasso <iam@fabiograsso.net>
 **Quick Start:** [QUICKSTART.md](QUICKSTART.md)
 
 > Design note: as of Okta's 2026.09.0 release, the legacy two-agent model
 > (On-Prem Provisioning Agent "OPP" + standalone On-Prem SCIM Server) was
 > replaced by a single consolidated **Okta On-Prem SCIM Agent**. This repo
-> (`-v2`) reflects that consolidation and only deploys the single agent.
+> reflects that consolidation and only deploys the single agent.
 
 ## Architecture
 
@@ -106,7 +106,7 @@ Based on Generic DB Connector Appendix A, adapted for MySQL/MariaDB:
 9. **ADD_ENTITLEMENT_TO_USER(p_user_id, p_ent_id)** - Assigns entitlement
 10. **REMOVE_ENTITLEMENT_FROM_USER(p_user_id, p_ent_id)** - Revokes entitlement
 
-**See also:** [Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md), [Okta_SCIM_Server.md](doc/Okta_SCIM_Server.md)
+**See also:** [Okta_Provisioning_Configuration.md](doc/Okta_Provisioning_Configuration.md)
 
 ## Configuration
 
@@ -332,5 +332,4 @@ Reset: `docker compose down && rm -rf ./data/mysql && make start-logs`
 - **QUICKSTART.md** - Fast setup (minimal steps, essential commands)
 - **README.md** - User guide (comprehensive with diagrams, badges, architecture)
 - **doc/Okta_Provisioning_Configuration.md** - Admin Console config (procedures, parameters, screenshots, testing)
-- **doc/Okta_SCIM_Server.md** - SCIM Agent internals (Spring Boot 3.5.0, SCIM 2.0 endpoints, auth, config, performance - educational only, not official)
 - **CLAUDE.md** (this file) - Technical reference for AI assistants (implementation, architecture, schema, troubleshooting)
